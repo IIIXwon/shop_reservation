@@ -8,9 +8,16 @@ import static org.junit.jupiter.api.Assertions.*;
 class AccountTest {
     @Test
     @DisplayName("Account 객체 생성 성공")
-    void initAccount() {
+    void successAccount() {
         assertDoesNotThrow(() -> {
-            new Account("원", "승환", new Email("test", "test.com")); });
+            new Account("원", "승환", Email.create("test@test.com")); });
+    }
+
+    @Test
+    @DisplayName("Account 객체 생성 성공")
+    void failAccount() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            new Account("", "승환", Email.create("test@test.com")); });
     }
 
 }
