@@ -44,3 +44,11 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+task copyPrivate(type: Copy) {
+    copy {
+        from './be-security'
+        include "application.yml"
+        into 'src/main/resources'
+    }
+}
