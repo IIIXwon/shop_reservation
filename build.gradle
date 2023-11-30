@@ -26,9 +26,12 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-validation
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-validation', version: '3.1.5'
+
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
-    runtimeOnly 'com.h2database:h2'
+//    runtimeOnly 'com.h2database:h2'
     runtimeOnly 'org.postgresql:postgresql'
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
     annotationProcessor 'org.projectlombok:lombok'
@@ -38,4 +41,12 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+task copyPrivate(type: Copy) {
+    copy {
+        from './be-security'
+        include "application.yml"
+        into 'src/main/resources'
+    }
 }

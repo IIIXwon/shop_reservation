@@ -1,4 +1,4 @@
-package be.shwan.domain;
+package be.shwan.account.domain;
 
 
 import jakarta.persistence.Embeddable;
@@ -7,8 +7,8 @@ import lombok.NoArgsConstructor;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@Embeddable
-@NoArgsConstructor
+//@Embeddable
+//@NoArgsConstructor
 public class Email {
     private String id;
     private String domain;
@@ -34,5 +34,10 @@ public class Email {
         Pattern emailPattern = Pattern.compile("^[\\w!#$%&’*+/=?`{|}~^-]+(?:\\.[\\w!#$%&’*+/=?`{|}~^-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$");
         Matcher matcher = emailPattern.matcher(email);
         return matcher.matches();
+    }
+
+    @Override
+    public String toString() {
+        return id + "@" + domain;
     }
 }
