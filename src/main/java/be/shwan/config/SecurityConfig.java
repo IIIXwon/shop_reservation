@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 
 @EnableMethodSecurity
 @Configuration
@@ -34,11 +35,15 @@ public class SecurityConfig {
                         // api
                         .requestMatchers("/", "/login", "/sign-up", "/check-email", "/check-email-token",
                                 "/email-login", "/check-email-login", "login-link").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/profile/*").permitAll()
                         // web
                         .requestMatchers(HttpMethod.GET, PathRequest.toStaticResources().atCommonLocations().toString()).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/profile/*").permitAll()
                         .anyRequest().authenticated()
         );
+
+        http
+                .securityContext((securityContext) -> securityContext .requireExplicitSave(false));
+
 
         return http.build();
     }

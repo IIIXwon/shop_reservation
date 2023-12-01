@@ -42,4 +42,12 @@ public class Account {
     public void generateEmailCheckToken() {
         this.emailCheckToken = UUID.randomUUID().toString();
     }
+
+    public void verify() {
+        active = true;
+    }
+
+    public boolean isValidToken(String token) {
+        return emailCheckToken.equals(token);
+    }
 }

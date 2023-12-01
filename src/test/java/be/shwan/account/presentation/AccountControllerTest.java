@@ -1,6 +1,8 @@
 package be.shwan.account.presentation;
 
+import be.shwan.account.domain.Account;
 import be.shwan.account.domain.AccountRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,10 +14,14 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.then;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
+import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.unauthenticated;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -35,29 +41,38 @@ class AccountControllerTest {
     @MockBean
     JavaMailSender javaMailSender;
 
+    @BeforeEach
+    void init() {
+        accountRepository.deleteAll();
+    }
     @DisplayName("[GET] /sign-up 회원가입 페이지 접근")
     @Test
     void testSignUpPage() throws Exception {
         mockMvc.perform(get("/sign-up"))
                 .andExpect(model().attributeExists("signUpFormDto"))
                 .andExpect(view().name(accountView))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(unauthenticated())
+        ;
 
     }
 
     @DisplayName("[POST] /sign-up 회원가입 성공")
     @Test
     void testSignUpSubmit() throws Exception {
+        String nickname = "asdf";
         mockMvc.perform(post("/sign-up").with(csrf())
-                        .param("nickname", "asdf")
+                        .param("nickname", nickname)
                         .param("email", "asdf@adsf.com")
                         .param("password", "1234qwe"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(view().name("redirect:/"))
+                .andExpect(authenticated().withUsername(nickname))
         ;
 
+        Account account = accountRepository.findByEmail("asdf@adsf.com");
         assertTrue(accountRepository.existsByEmail("asdf@adsf.com"));
-
+        assertNotNull(account.getEmailCheckToken());
         then(javaMailSender).should().send(any(SimpleMailMessage.class));
     }
 
@@ -70,6 +85,43 @@ class AccountControllerTest {
                 .andExpect(view().name(accountView))
                 .andExpect(model().hasErrors())
                 .andExpect(model().attributeHasErrors())
+                .andExpect(unauthenticated())
         ;
+    }
+
+    @DisplayName("[GET] /check-email-token 이메일 확인")
+    @Test
+    @Transactional
+    void testCheckEmailToken() throws Exception {
+        String email = "asdf@adsf.com";
+        String nickname = "asdf";
+        Account account = new Account(nickname, email, "1234qwe");
+        accountRepository.save(account);
+        account.generateEmailCheckToken();
+
+        mockMvc.perform(get("/check-email-token")
+                        .param("token", account.getEmailCheckToken())
+                        .param("email", account.getEmail()))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("nickname", "numberOfUser"))
+                .andExpect(model().attribute("nickname", nickname))
+                .andExpect(view().name("accounts/checked-email"))
+                .andExpect(authenticated().withUsername(nickname))
+        ;
+    }
+
+    @DisplayName("[GET] /check-email-token 이메일 확인 실패")
+    @Test
+    void testCheckEmailToken_fail() throws Exception {
+        mockMvc.perform(get("/check-email-token")
+                        .param("token", "dhshdlkhfglkhs")
+                        .param("email", "sdfkhkshdfa@Sd.com"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("error"))
+                .andExpect(view().name("accounts/checked-email"))
+                .andExpect(unauthenticated())
+
+        ;
+
     }
 }
