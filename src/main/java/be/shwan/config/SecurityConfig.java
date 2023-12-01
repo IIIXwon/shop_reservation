@@ -2,6 +2,7 @@ package be.shwan.config;
 
 import be.shwan.account.application.AccountService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -30,11 +31,15 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests((authorize) ->
                 authorize
+                        // api
                         .requestMatchers("/", "/login", "/sign-up", "/check-email", "/check-email-token",
                                 "/email-login", "/check-email-login", "login-link").permitAll()
+                        // web
+                        .requestMatchers(HttpMethod.GET, PathRequest.toStaticResources().atCommonLocations().toString()).permitAll()
                         .requestMatchers(HttpMethod.GET, "/profile/*").permitAll()
                         .anyRequest().authenticated()
         );
+
         return http.build();
     }
 }

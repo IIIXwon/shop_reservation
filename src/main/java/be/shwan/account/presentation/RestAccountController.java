@@ -3,7 +3,7 @@ package be.shwan.account.presentation;
 import be.shwan.account.application.AccountService;
 import be.shwan.account.domain.Account;
 import be.shwan.account.dto.LoginDto;
-import be.shwan.account.dto.SignUpRequestDto;
+import be.shwan.account.dto.SignUpFormDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -39,7 +39,7 @@ public class RestAccountController {
 
 
     @PostMapping(value = {"/register", "/sign-up"})
-    public ResponseEntity<?> register(@ModelAttribute SignUpRequestDto requestDto) throws Exception {
+    public ResponseEntity<?> register(@ModelAttribute SignUpFormDto requestDto) throws Exception {
         log.info("request id : {}", requestDto.toString());
         Account account = accountService.signUp(requestDto);
         return ResponseEntity.ok(account);

@@ -4,7 +4,7 @@ import be.shwan.account.application.AccountService;
 import be.shwan.account.domain.Account;
 import be.shwan.account.domain.AccountRepository;
 import be.shwan.account.dto.AccountResponseRecord;
-import be.shwan.account.dto.SignUpRequestDto;
+import be.shwan.account.dto.SignUpFormDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -24,7 +24,7 @@ public class SimpleAccountServiceImpl implements AccountService {
     private final AccountRepository accountRepository;
     private final PasswordEncoder passwordEncoder;
     @Override
-    public Account signUp(SignUpRequestDto requestDto) throws Exception {
+    public Account signUp(SignUpFormDto requestDto) throws Exception {
         Account account = new Account(requestDto.nickname(), passwordEncoder.encode(requestDto.password()),
                 requestDto.email());
         Account newAccount = accountRepository.save(account);

@@ -4,9 +4,9 @@ import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @NoArgsConstructor
 @Entity
@@ -23,6 +23,8 @@ public class Account {
     @Column(unique = true, nullable = false)
     private String email;
 
+    private String emailCheckToken;
+
     private LocalDate createDate;
     private LocalDate lastUpdateDate;
 
@@ -35,5 +37,9 @@ public class Account {
         this.createDate = LocalDate.now();
         this.lastUpdateDate = LocalDate.now();
         this.active = false;
+    }
+
+    public void generateEmailCheckToken() {
+        this.emailCheckToken = UUID.randomUUID().toString();
     }
 }

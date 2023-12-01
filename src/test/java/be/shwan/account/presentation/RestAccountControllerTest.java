@@ -1,11 +1,9 @@
 package be.shwan.account.presentation;
 
 import be.shwan.account.application.AccountService;
-import be.shwan.account.domain.Account;
 import be.shwan.account.domain.AccountRepository;
-import be.shwan.account.domain.Email;
 import be.shwan.account.dto.LoginDto;
-import be.shwan.account.dto.SignUpRequestDto;
+import be.shwan.account.dto.SignUpFormDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,13 +15,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.formLogin;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -46,7 +39,7 @@ class RestAccountControllerTest {
 
     @BeforeEach
     void init() throws Exception {
-        SignUpRequestDto dto = SignUpRequestDto.builder()
+        SignUpFormDto dto = SignUpFormDto.builder()
                 .nickname("test")
                 .password("password")
                 .email("test2@test.com")
@@ -62,7 +55,7 @@ class RestAccountControllerTest {
     @DisplayName("[POST] /sign-up 회원 가입 성공 테스트")
     @Test
     void sign_in() throws Exception {
-        SignUpRequestDto requestDto = SignUpRequestDto.builder()
+        SignUpFormDto requestDto = SignUpFormDto.builder()
                 .nickname("testUser")
                 .password("password")
                 .email("test@gmail.com")

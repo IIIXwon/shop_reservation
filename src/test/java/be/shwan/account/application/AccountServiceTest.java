@@ -2,8 +2,7 @@ package be.shwan.account.application;
 
 import be.shwan.account.domain.Account;
 import be.shwan.account.domain.AccountRepository;
-import be.shwan.account.dto.AccountResponseRecord;
-import be.shwan.account.dto.SignUpRequestDto;
+import be.shwan.account.dto.SignUpFormDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,7 +18,7 @@ class AccountServiceTest {
 
     @Test
     void signUpTest() throws Exception {
-        SignUpRequestDto dto = SignUpRequestDto.builder()
+        SignUpFormDto dto = SignUpFormDto.builder()
                 .nickname("test")
                 .password("password")
                 .email("test@test.com")
