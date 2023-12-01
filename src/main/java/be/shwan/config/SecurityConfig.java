@@ -35,9 +35,9 @@ public class SecurityConfig {
                         // api
                         .requestMatchers("/", "/login", "/sign-up", "/check-email", "/check-email-token",
                                 "/email-login", "/check-email-login", "login-link").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/profile/*").permitAll()
                         // web
                         .requestMatchers(HttpMethod.GET, PathRequest.toStaticResources().atCommonLocations().toString()).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/profile/*").permitAll()
                         .anyRequest().authenticated()
         );
 
