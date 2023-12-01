@@ -1,5 +1,6 @@
-package be.shwan.domain;
+package be.shwan.account.domain;
 
+import be.shwan.account.domain.Email;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
