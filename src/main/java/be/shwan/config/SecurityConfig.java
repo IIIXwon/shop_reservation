@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 
 @EnableMethodSecurity
 @Configuration
@@ -39,6 +40,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/profile/*").permitAll()
                         .anyRequest().authenticated()
         );
+
+        http
+                .securityContext((securityContext) -> securityContext .requireExplicitSave(false));
+
 
         return http.build();
     }

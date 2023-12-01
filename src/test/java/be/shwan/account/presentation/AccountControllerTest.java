@@ -18,7 +18,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.then;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
+import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.unauthenticated;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -48,19 +51,23 @@ class AccountControllerTest {
         mockMvc.perform(get("/sign-up"))
                 .andExpect(model().attributeExists("signUpFormDto"))
                 .andExpect(view().name(accountView))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(unauthenticated())
+        ;
 
     }
 
     @DisplayName("[POST] /sign-up 회원가입 성공")
     @Test
     void testSignUpSubmit() throws Exception {
+        String nickname = "asdf";
         mockMvc.perform(post("/sign-up").with(csrf())
-                        .param("nickname", "asdf")
+                        .param("nickname", nickname)
                         .param("email", "asdf@adsf.com")
                         .param("password", "1234qwe"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(view().name("redirect:/"))
+                .andExpect(authenticated().withUsername(nickname))
         ;
 
         Account account = accountRepository.findByEmail("asdf@adsf.com");
@@ -78,6 +85,7 @@ class AccountControllerTest {
                 .andExpect(view().name(accountView))
                 .andExpect(model().hasErrors())
                 .andExpect(model().attributeHasErrors())
+                .andExpect(unauthenticated())
         ;
     }
 
@@ -98,6 +106,7 @@ class AccountControllerTest {
                 .andExpect(model().attributeExists("nickname", "numberOfUser"))
                 .andExpect(model().attribute("nickname", nickname))
                 .andExpect(view().name("accounts/checked-email"))
+                .andExpect(authenticated().withUsername(nickname))
         ;
     }
 
@@ -110,6 +119,8 @@ class AccountControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("error"))
                 .andExpect(view().name("accounts/checked-email"))
+                .andExpect(unauthenticated())
+
         ;
 
     }

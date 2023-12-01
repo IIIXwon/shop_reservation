@@ -8,6 +8,7 @@ import be.shwan.account.dto.SignUpFormValidator;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
@@ -48,7 +49,9 @@ public class AccountController {
             return SIGN_UP_PAGE;
         }
 
-        accountService.processNewAccount(signUpFormDto);
+        Account account = accountService.processNewAccount(signUpFormDto);
+        accountService.login(account);
+        SecurityContextHolder.getContext();
         return "redirect:/";
     }
 
@@ -61,7 +64,7 @@ public class AccountController {
             return view;
         }
 
-        if (!account.getEmailCheckToken().equals(token)) {
+        if (!account.isValidToken(token)) {
             model.addAttribute("error", "wrong.token");
             return view;
         }
@@ -70,6 +73,7 @@ public class AccountController {
 
         model.addAttribute("numberOfUser", accountRepository.count());
         model.addAttribute("nickname", account.getNickname());
+        accountService.login(account);
         return view;
     }
 

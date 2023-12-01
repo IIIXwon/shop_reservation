@@ -46,4 +46,8 @@ public class Account {
     public void verify() {
         active = true;
     }
+
+    public boolean isValidToken(String token) {
+        return emailCheckToken.equals(token);
+    }
 }
