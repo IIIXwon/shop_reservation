@@ -1,6 +1,8 @@
 package be.shwan.account.presentation;
 
 import be.shwan.account.application.AccountService;
+import be.shwan.account.domain.Account;
+import be.shwan.account.domain.AccountRepository;
 import be.shwan.account.dto.SignUpFormDto;
 import be.shwan.account.dto.SignUpFormValidator;
 import jakarta.validation.Valid;
@@ -10,10 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequiredArgsConstructor
@@ -21,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 public class AccountController {
 
     private final AccountService accountService;
+    private final AccountRepository accountRepository;
 
     private final SignUpFormValidator signUpFormValidator;
 
@@ -50,6 +50,27 @@ public class AccountController {
 
         accountService.processNewAccount(signUpFormDto);
         return "redirect:/";
+    }
+
+    @GetMapping(value = {"/check-email-token"})
+    public String checkEmailToken(@RequestParam String token, @RequestParam String email, Model model) {
+        Account account = accountRepository.findByEmail(email);
+        String view = "accounts/checked-email";
+        if (account == null) {
+            model.addAttribute("error", "wrong.email");
+            return view;
+        }
+
+        if (!account.getEmailCheckToken().equals(token)) {
+            model.addAttribute("error", "wrong.token");
+            return view;
+        }
+
+        account.verify();
+
+        model.addAttribute("numberOfUser", accountRepository.count());
+        model.addAttribute("nickname", account.getNickname());
+        return view;
     }
 
 
