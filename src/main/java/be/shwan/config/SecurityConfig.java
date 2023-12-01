@@ -28,17 +28,13 @@ public class SecurityConfig {
     }
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
-        http.csrf((csrf) -> csrf.disable())
-                .authorizeHttpRequests((authorize) ->
-                        authorize.requestMatchers(HttpMethod.GET, "/api/**").permitAll()
-                                .requestMatchers("/api/auth/**").permitAll()
-//                                .anyRequest().authenticated()
-
-                );
-
-//        http.formLogin((formLogin) -> formLogin.disable());
-
+        http.authorizeHttpRequests((authorize) ->
+                authorize
+                        .requestMatchers("/", "/login", "/sign-up", "/check-email", "/check-email-token",
+                                "/email-login", "/check-email-login", "login-link").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/profile/*").permitAll()
+                        .anyRequest().authenticated()
+        );
         return http.build();
     }
 }
