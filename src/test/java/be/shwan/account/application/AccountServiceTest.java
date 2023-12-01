@@ -24,7 +24,7 @@ class AccountServiceTest {
                 .email("test@test.com")
                 .build();
 
-        Account account = accountService.signUp(dto);
+        Account account = accountService.processNewAccount(dto);
         assertEquals(1L, account.getId());
     }
     

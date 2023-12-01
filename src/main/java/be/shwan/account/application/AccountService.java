@@ -6,7 +6,7 @@ import be.shwan.account.dto.SignUpFormDto;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 public interface AccountService extends UserDetailsService {
-    Account signUp(SignUpFormDto requestDto) throws Exception;
-
     AccountResponseRecord getAccountInfo(Long id);
+
+    Account processNewAccount(SignUpFormDto signUpFormDto) throws Exception;
 }

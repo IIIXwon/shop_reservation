@@ -41,7 +41,7 @@ public class RestAccountController {
     @PostMapping(value = {"/register", "/sign-up"})
     public ResponseEntity<?> register(@ModelAttribute SignUpFormDto requestDto) throws Exception {
         log.info("request id : {}", requestDto.toString());
-        Account account = accountService.signUp(requestDto);
+        Account account = accountService.processNewAccount(requestDto);
         return ResponseEntity.ok(account);
     }
 }

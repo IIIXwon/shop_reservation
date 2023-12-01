@@ -6,6 +6,8 @@ import be.shwan.account.domain.AccountRepository;
 import be.shwan.account.dto.AccountResponseRecord;
 import be.shwan.account.dto.SignUpFormDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,12 +25,12 @@ public class SimpleAccountServiceImpl implements AccountService {
 
     private final AccountRepository accountRepository;
     private final PasswordEncoder passwordEncoder;
-    @Override
-    public Account signUp(SignUpFormDto requestDto) throws Exception {
+    private final JavaMailSender javaMailSender;
+
+    private Account signUp(SignUpFormDto requestDto) {
         Account account = new Account(requestDto.nickname(), passwordEncoder.encode(requestDto.password()),
                 requestDto.email());
-        Account newAccount = accountRepository.save(account);
-        return newAccount;
+        return accountRepository.save(account);
     }
 
     @Override
@@ -37,13 +39,28 @@ public class SimpleAccountServiceImpl implements AccountService {
         return getAccountRecord(account);
     }
 
+    @Override
+    public Account processNewAccount(SignUpFormDto signUpFormDto) {
+        Account account = signUp(signUpFormDto);
+        account.generateEmailCheckToken();
+        sendEmail(account);
+        return account;
+    }
+
+    private void sendEmail(Account account) {
+        SimpleMailMessage mailMessage = new SimpleMailMessage();
+        mailMessage.setSubject("스터디올레 회원 가입 인증");
+        mailMessage.setText("/check-email-token?token=" + account.getEmailCheckToken() + "&email=" + account.getEmail());
+        mailMessage.setTo(account.getEmail());
+        javaMailSender.send(mailMessage);
+    }
 
 
     private AccountResponseRecord getAccountRecord(Account newAccount) {
         return AccountResponseRecord.builder()
                 .id(newAccount.getId())
                 .nickname(newAccount.getNickname())
-                .email(newAccount.getEmail().toString())
+                .email(newAccount.getEmail())
                 .active(newAccount.isActive())
                 .build();
     }

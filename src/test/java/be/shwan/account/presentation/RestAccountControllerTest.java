@@ -44,7 +44,7 @@ class RestAccountControllerTest {
                 .password("password")
                 .email("test2@test.com")
                 .build();
-        accountService.signUp(dto);
+        accountService.processNewAccount(dto);
     }
 
     @AfterEach
