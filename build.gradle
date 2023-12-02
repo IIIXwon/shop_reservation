@@ -22,11 +22,11 @@ node {
     // If false, it will use the globally installed Node.js
     // If true, it will download node using above parameters
     // Note that npm is bundled with Node.js
-    download = false
+    download = true
 
     // Version of node to download and install (only used if download is true)
     // It will be unpacked in the workDir
-
+    version = "20.10.0"
     // Version of npm to use
     // If specified, installs it in the npmWorkDir
     // If empty, the plugin will use the npm command bundled with Node.js
