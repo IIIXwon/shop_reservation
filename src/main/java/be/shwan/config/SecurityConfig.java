@@ -37,13 +37,20 @@ public class SecurityConfig {
                                 "/email-login", "/check-email-login", "login-link").permitAll()
                         .requestMatchers(HttpMethod.GET, "/profile/**").permitAll()
                         // web
-                        .requestMatchers(HttpMethod.GET, PathRequest.toStaticResources().atCommonLocations().toString()).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/images/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/node_modules/**").permitAll()
                         .anyRequest().authenticated()
         );
         http
                 .securityContext((securityContext) -> securityContext .requireExplicitSave(false));
 
+        http.formLogin((formLogin) -> {
+            formLogin.loginPage("/login").permitAll();
+        });
+
+        http.logout((logout) -> {
+            logout.logoutSuccessUrl("/");
+        });
 
         return http.build();
     }

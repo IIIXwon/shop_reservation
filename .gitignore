@@ -45,3 +45,6 @@ out/
 
 ### npm ###
 src/main/resources/static/node_modules
+
+### img ###
+src/main/resources/static/images
