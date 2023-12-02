@@ -3,6 +3,7 @@ package be.shwan.account.application.impl;
 import be.shwan.account.application.AccountService;
 import be.shwan.account.domain.Account;
 import be.shwan.account.domain.AccountRepository;
+import be.shwan.account.domain.UserAccount;
 import be.shwan.account.dto.AccountResponseRecord;
 import be.shwan.account.dto.SignUpFormDto;
 import lombok.RequiredArgsConstructor;
@@ -53,7 +54,7 @@ public class SimpleAccountServiceImpl implements AccountService {
     @Override
     public void login(Account account) {
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
-                account.getNickname(),
+                new UserAccount(account),
                 account.getPassword(),
                 List.of(new SimpleGrantedAuthority("ROLE_USER")));
         SecurityContextHolder.getContext().setAuthentication(token);
