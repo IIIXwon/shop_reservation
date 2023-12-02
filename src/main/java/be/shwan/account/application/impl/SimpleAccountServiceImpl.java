@@ -12,11 +12,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,7 +43,7 @@ public class SimpleAccountServiceImpl implements AccountService {
     public Account processNewAccount(SignUpFormDto signUpFormDto) {
         Account account = signUp(signUpFormDto);
         account.generateEmailCheckToken();
-        sendEmail(account);
+        sendEmailToken(account);
         return account;
     }
 
@@ -60,12 +56,13 @@ public class SimpleAccountServiceImpl implements AccountService {
         SecurityContextHolder.getContext().setAuthentication(token);
     }
 
-    private void sendEmail(Account account) {
+    public void sendEmailToken(Account account) {
         SimpleMailMessage mailMessage = new SimpleMailMessage();
         mailMessage.setSubject("스터디올레 회원 가입 인증");
         mailMessage.setText("/check-email-token?token=" + account.getEmailCheckToken() + "&email=" + account.getEmail());
         mailMessage.setTo(account.getEmail());
         javaMailSender.send(mailMessage);
+        account.sendEmailCheckToken();
     }
 
 

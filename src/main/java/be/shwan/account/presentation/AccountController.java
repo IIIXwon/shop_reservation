@@ -3,6 +3,7 @@ package be.shwan.account.presentation;
 import be.shwan.account.application.AccountService;
 import be.shwan.account.domain.Account;
 import be.shwan.account.domain.AccountRepository;
+import be.shwan.account.domain.CurrentUser;
 import be.shwan.account.dto.SignUpFormDto;
 import be.shwan.account.dto.SignUpFormValidator;
 import jakarta.validation.Valid;
@@ -26,6 +27,8 @@ public class AccountController {
     private final SignUpFormValidator signUpFormValidator;
 
     private final String SIGN_UP_PAGE = "accounts/sign-up";
+    private final String CHECK_EMAIL_VIEW = "accounts/check-email";
+    private final String REDIRECT_ROOT = "redirect:/";
 
     @InitBinder("signUpFormDto")
     public void initBinder(WebDataBinder webDataBinder) {
@@ -52,7 +55,7 @@ public class AccountController {
         Account account = accountService.processNewAccount(signUpFormDto);
         accountService.login(account);
         SecurityContextHolder.getContext();
-        return "redirect:/";
+        return REDIRECT_ROOT;
     }
 
     @GetMapping(value = {"/check-email-token"})
@@ -77,5 +80,20 @@ public class AccountController {
         return view;
     }
 
+    @GetMapping(value = {"/check-email"})
+    public String checkEmailPage(@CurrentUser Account account, Model model) {
+        model.addAttribute("email", account.getEmail());
+        return CHECK_EMAIL_VIEW;
+    }
 
+    @GetMapping(value = {"/resend-check-email-token"})
+    public String resendCheckEmailToken(@CurrentUser Account account, Model model) {
+        if (!account.isValidIssueTokenTime()) {
+            model.addAttribute("email", account.getEmail());
+            model.addAttribute("error", "이메일 재전송을 1시간에 1회 가능 합니다");
+            return CHECK_EMAIL_VIEW;
+        }
+        accountService.sendEmailToken(account);
+        return REDIRECT_ROOT;
+    }
 }

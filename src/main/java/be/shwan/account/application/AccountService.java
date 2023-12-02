@@ -11,4 +11,6 @@ public interface AccountService {
     Account processNewAccount(SignUpFormDto signUpFormDto) throws Exception;
 
     void login(Account account);
+
+    void sendEmailToken(Account account);
 }

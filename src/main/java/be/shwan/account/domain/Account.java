@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @NoArgsConstructor
@@ -24,6 +25,7 @@ public class Account {
     private String email;
 
     private String emailCheckToken;
+    private LocalDateTime emailCheckTokenIssueTime;
 
     private LocalDate createDate;
     private LocalDate lastUpdateDate;
@@ -49,5 +51,13 @@ public class Account {
 
     public boolean isValidToken(String token) {
         return emailCheckToken.equals(token);
+    }
+
+    public void sendEmailCheckToken() {
+        emailCheckTokenIssueTime = LocalDateTime.now();
+    }
+
+    public boolean isValidIssueTokenTime() {
+        return LocalDateTime.now().isAfter(emailCheckTokenIssueTime.plusHours(1L));
     }
 }

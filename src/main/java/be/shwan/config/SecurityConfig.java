@@ -33,7 +33,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests((authorize) ->
                 authorize
                         // api
-                        .requestMatchers("/", "/login", "/sign-up", "/check-email", "/check-email-token",
+                        .requestMatchers("/", "/login", "/sign-up", "/check-email-token",
                                 "/email-login", "/check-email-login", "login-link").permitAll()
                         .requestMatchers(HttpMethod.GET, "/profile/**").permitAll()
                         // web
