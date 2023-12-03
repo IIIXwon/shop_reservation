@@ -67,6 +67,12 @@ public class SimpleAccountServiceImpl implements AccountService {
         account.sendEmailCheckToken();
     }
 
+    @Override
+    public void completeSignUp(Account account) {
+        account.verify();
+        login(account);
+    }
+
 
     private AccountResponseRecord getAccountRecord(Account newAccount) {
         return AccountResponseRecord.builder()
@@ -77,6 +83,7 @@ public class SimpleAccountServiceImpl implements AccountService {
                 .build();
     }
 
+    @Transactional(readOnly = true)
     @Override
     public UserDetails loadUserByUsername(String nicknameOrEmail) throws UsernameNotFoundException {
         Account account = accountRepository.findByNickname(nicknameOrEmail);

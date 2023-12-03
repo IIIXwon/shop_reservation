@@ -23,9 +23,14 @@ public class Account {
     private String password;
     @Column(unique = true, nullable = false)
     private String email;
-
     private String emailCheckToken;
     private LocalDateTime emailCheckTokenIssueTime;
+
+    private String profileImage;
+    private String bio;
+    private String url;
+    private String occupation;
+    private String location;
 
     private LocalDate createDate;
     private LocalDate lastUpdateDate;

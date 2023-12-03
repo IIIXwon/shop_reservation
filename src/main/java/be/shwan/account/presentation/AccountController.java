@@ -72,11 +72,10 @@ public class AccountController {
             return view;
         }
 
-        account.verify();
 
+        accountService.completeSignUp(account);
         model.addAttribute("numberOfUser", accountRepository.count());
         model.addAttribute("nickname", account.getNickname());
-        accountService.login(account);
         return view;
     }
 
@@ -95,5 +94,17 @@ public class AccountController {
         }
         accountService.sendEmailToken(account);
         return REDIRECT_ROOT;
+    }
+
+    @GetMapping(value = {"/profile/{nickname}"})
+    public String profilePage(@PathVariable String nickname, @CurrentUser Account account, Model model) {
+        Account byNickname = accountRepository.findByNickname(nickname);
+        if(byNickname == null) {
+            throw new IllegalArgumentException(nickname + "에 해당하는 사용자가 없습니다.");
+        }
+
+        model.addAttribute(byNickname);
+        model.addAttribute("isOwner", byNickname.equals(account));
+        return "accounts/profile";
     }
 }

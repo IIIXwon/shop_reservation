@@ -13,4 +13,6 @@ public interface AccountService extends UserDetailsService{
     void login(Account account);
 
     void sendEmailToken(Account account);
+
+    void completeSignUp(Account account);
 }
