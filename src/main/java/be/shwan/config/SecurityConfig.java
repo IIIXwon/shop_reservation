@@ -13,11 +13,18 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 
+import javax.sql.DataSource;
+
+@RequiredArgsConstructor
 @EnableMethodSecurity
 @Configuration
 public class SecurityConfig {
+
+    private final DataSource dataSource;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -29,7 +36,7 @@ public class SecurityConfig {
         return configuration.getAuthenticationManager();
     }
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain securityFilterChain(HttpSecurity http, AccountService accountService) throws Exception {
         http.authorizeHttpRequests((authorize) ->
                 authorize
                         // api
@@ -41,6 +48,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/node_modules/**").permitAll()
                         .anyRequest().authenticated()
         );
+
+        http.
+                rememberMe((rememberMe) ->
+                        rememberMe.userDetailsService(accountService).tokenRepository(tokenRepository()));
+
         http
                 .securityContext((securityContext) -> securityContext .requireExplicitSave(false));
 
@@ -53,5 +65,13 @@ public class SecurityConfig {
         });
 
         return http.build();
+    }
+
+    @Bean
+    public PersistentTokenRepository tokenRepository() {
+        JdbcTokenRepositoryImpl jdbcTokenRepository = new JdbcTokenRepositoryImpl();
+        jdbcTokenRepository.setDataSource(dataSource);
+
+        return jdbcTokenRepository;
     }
 }
