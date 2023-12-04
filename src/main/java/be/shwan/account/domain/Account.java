@@ -1,5 +1,6 @@
 package be.shwan.account.domain;
 
+import be.shwan.settings.dto.ProfileInfo;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -64,5 +65,12 @@ public class Account {
 
     public boolean isValidIssueTokenTime() {
         return LocalDateTime.now().isAfter(emailCheckTokenIssueTime.plusHours(1L));
+    }
+
+    public void updateProfile(ProfileInfo profileInfo) {
+        this.bio = profileInfo.bio();
+        this.url = profileInfo.url();
+        this.occupation = profileInfo.occupation();
+        this.location = profileInfo.location();
     }
 }
