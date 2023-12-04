@@ -12,6 +12,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.test.context.support.TestExecutionEvent;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -44,7 +46,7 @@ class SettingsControllerTest {
                 .build();
 
         Account account = accountService.processNewAccount(request);
-        accountService.login(account);
+//        accountService.login(account);
     }
 
     @AfterEach
@@ -52,6 +54,7 @@ class SettingsControllerTest {
         accountRepository.deleteAll();
     }
 
+    @WithUserDetails(value = "seunghwan", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     @DisplayName("[GET] /settings/profile, 프로필 작성 페이지 화면")
     @Test
     void testProfilePage() throws Exception {
@@ -63,6 +66,7 @@ class SettingsControllerTest {
         ;
     }
 
+    @WithUserDetails(value = "seunghwan", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     @DisplayName("[POST] /settings/profile, 프로필 정보 업데이트")
     @Test
     void testUpdateProfile() throws Exception {
@@ -78,8 +82,26 @@ class SettingsControllerTest {
                         .param(location, location)
                 )
                 .andExpect(status().is3xxRedirection())
-                .andExpect(view().name("redirect:/settings/profile"))
+                .andExpect(redirectedUrl("/settings/profile"))
                 .andExpect(model().attributeDoesNotExist("errors"))
+                .andExpect(flash().attributeExists("message"))
+                .andExpect(authenticated().withUsername("seunghwan"))
+        ;
+    }
+
+    @WithUserDetails(value = "seunghwan", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @DisplayName("[POST] /settings/profile, 프로필 정보 업데이트 실패")
+    @Test
+    void testUpdateProfile_fail() throws Exception {
+        String bio = "biobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobiobio";
+
+        mockMvc.perform(post("/settings/profile").with(csrf())
+                        .param("bio", bio)
+                )
+                .andExpect(status().isOk())
+                .andExpect(view().name("/settings/profile"))
+                .andExpect(model().attributeExists("account", "profileInfo"))
+                .andExpect(model().hasErrors())
                 .andExpect(authenticated().withUsername("seunghwan"))
         ;
     }
