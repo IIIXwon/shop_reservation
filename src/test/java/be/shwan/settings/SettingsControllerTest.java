@@ -46,7 +46,6 @@ class SettingsControllerTest {
                 .build();
 
         Account account = accountService.processNewAccount(request);
-//        accountService.login(account);
     }
 
     @AfterEach
@@ -101,6 +100,53 @@ class SettingsControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("/settings/profile"))
                 .andExpect(model().attributeExists("account", "profileInfo"))
+                .andExpect(model().hasErrors())
+                .andExpect(authenticated().withUsername("seunghwan"))
+        ;
+    }
+
+    @WithUserDetails(value = "seunghwan", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @DisplayName("[GET] /settings/password, 비밀번호 변경 페이지")
+    @Test
+    void testPasswordPage() throws Exception {
+        mockMvc.perform(get("/settings/password"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("passwordForm"))
+                .andExpect(view().name("/settings/password"))
+                .andExpect(authenticated().withUsername("seunghwan"))
+        ;
+    }
+
+    @WithUserDetails(value = "seunghwan", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @DisplayName("[POST] /settings/password, 비밀번호 변경 성공")
+    @Test
+    void testUpdatePassword() throws Exception {
+
+        mockMvc.perform(post("/settings/password")
+                        .param("newPassword", "11223344")
+                        .param("newPasswordConfirm", "11223344")
+                        .with(csrf())
+                )
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/settings/password"))
+                .andExpect(model().attributeDoesNotExist("errors"))
+                .andExpect(flash().attributeExists("message"))
+                .andExpect(authenticated().withUsername("seunghwan"))
+        ;
+    }
+
+    @WithUserDetails(value = "seunghwan", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @DisplayName("[POST] /settings/password, 비밀번호 변경 실패")
+    @Test
+    void testUpdatePassword_fail() throws Exception {
+
+        mockMvc.perform(post("/settings/password")
+                        .param("newPassword", "11223344")
+                        .param("newPasswordConfirm", "11223345")
+                        .with(csrf())
+                )
+                .andExpect(status().isOk())
+                .andExpect(view().name("/settings/password"))
                 .andExpect(model().hasErrors())
                 .andExpect(authenticated().withUsername("seunghwan"))
         ;

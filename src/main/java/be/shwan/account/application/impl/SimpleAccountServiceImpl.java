@@ -6,6 +6,7 @@ import be.shwan.account.domain.AccountRepository;
 import be.shwan.account.domain.UserAccount;
 import be.shwan.account.dto.AccountResponseRecord;
 import be.shwan.account.dto.SignUpFormDto;
+import be.shwan.settings.dto.PasswordForm;
 import be.shwan.settings.dto.ProfileInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
@@ -77,6 +78,12 @@ public class SimpleAccountServiceImpl implements AccountService {
     @Override
     public void updateProfile(Account account, ProfileInfo profileInfo) {
         account.updateProfile(profileInfo);
+        accountRepository.save(account);
+    }
+
+    @Override
+    public void updatePassword(Account account, PasswordForm passwordForm) {
+        account.updatePassword(passwordEncoder.encode(passwordForm.newPassword()));
         accountRepository.save(account);
     }
 
