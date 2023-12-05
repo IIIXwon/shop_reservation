@@ -3,6 +3,7 @@ package be.shwan.settings;
 import be.shwan.account.application.AccountService;
 import be.shwan.account.domain.Account;
 import be.shwan.account.domain.CurrentUser;
+import be.shwan.settings.dto.Notifications;
 import be.shwan.settings.dto.PasswordForm;
 import be.shwan.settings.dto.PasswordFormValidator;
 import be.shwan.settings.dto.ProfileInfo;
@@ -12,10 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -28,6 +26,8 @@ public class SettingsController {
     final String PROFILE_VIEW = "/settings/profile";
     final String PASSWORD_VIEW = "/settings/password";
     private final String PASSWORD_PATH = "/password";
+    private final String NOTIFICATION_PATH = "/notifications";
+    private final String NOTIFACATION_VIEW = "/settings/notifications";
 
     @InitBinder("passwordForm")
     public void initBinder(WebDataBinder webDataBinder) {
@@ -68,5 +68,23 @@ public class SettingsController {
         accountService.updatePassword(account, passwordForm);
         redirectAttributes.addFlashAttribute("message", "비밀번호를 수정 했습니다.");
         return "redirect:/settings/password";
+    }
+
+    @GetMapping(NOTIFICATION_PATH)
+    public String notificationPage(@CurrentUser Account account, Model model) {
+        model.addAttribute(new Notifications(account.isStudyCreatedByEmail(), account.isStudyCreatedByWeb(), account.isStudyEnrollmentResultByEmail(),
+                account.isStudyEnrollmentResultByWeb(), account.isStudyUpdatedByEmail(), account.isStudyUpdatedByWeb()));
+        return NOTIFACATION_VIEW;
+    }
+
+    @PostMapping(NOTIFICATION_PATH)
+    public String updateNotification(@CurrentUser Account account, @Valid Notifications notifications, Errors errors,
+                                     RedirectAttributes redirectAttributes) {
+        if (errors.hasErrors()) {
+            return NOTIFACATION_VIEW;
+        }
+        accountService.updateNotification(account, notifications);
+        redirectAttributes.addFlashAttribute("message", "알림을 수정 했습니다.");
+        return "redirect:/settings/notifications";
     }
 }

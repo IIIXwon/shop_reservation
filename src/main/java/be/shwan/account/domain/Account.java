@@ -1,5 +1,6 @@
 package be.shwan.account.domain;
 
+import be.shwan.settings.dto.Notifications;
 import be.shwan.settings.dto.ProfileInfo;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
@@ -27,12 +28,19 @@ public class Account {
     private String emailCheckToken;
     private LocalDateTime emailCheckTokenIssueTime;
 
-    @Lob
+    @Lob @Basic(fetch = FetchType.EAGER)
     private String profileImage;
     private String bio;
     private String url;
     private String occupation;
     private String location;
+
+    private boolean studyCreatedByEmail;
+    private boolean studyCreatedByWeb = true;
+    private boolean studyEnrollmentResultByEmail;
+    private boolean studyEnrollmentResultByWeb = true;
+    private boolean studyUpdatedByEmail;
+    private boolean studyUpdatedByWeb = true;
 
     private LocalDate createDate;
     private LocalDate lastUpdateDate;
@@ -78,5 +86,14 @@ public class Account {
 
     public void updatePassword(String encodePassword) {
         this.password = encodePassword;
+    }
+
+    public void updateNotification(Notifications notifications) {
+        this.studyCreatedByEmail = notifications.studyCreatedByEmail();
+        this.studyCreatedByWeb = notifications.studyCreatedByWeb();
+        this.studyEnrollmentResultByEmail = notifications.studyEnrollmentResultByEmail();
+        this.studyEnrollmentResultByWeb = notifications.studyEnrollmentResultByWeb();
+        this.studyUpdatedByEmail = notifications.studyUpdatedByEmail();
+        this.studyUpdatedByWeb = notifications.studyUpdatedByWeb();
     }
 }

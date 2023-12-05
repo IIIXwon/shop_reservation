@@ -6,6 +6,7 @@ import be.shwan.account.domain.AccountRepository;
 import be.shwan.account.domain.UserAccount;
 import be.shwan.account.dto.AccountResponseRecord;
 import be.shwan.account.dto.SignUpFormDto;
+import be.shwan.settings.dto.Notifications;
 import be.shwan.settings.dto.PasswordForm;
 import be.shwan.settings.dto.ProfileInfo;
 import lombok.RequiredArgsConstructor;
@@ -84,6 +85,12 @@ public class SimpleAccountServiceImpl implements AccountService {
     @Override
     public void updatePassword(Account account, PasswordForm passwordForm) {
         account.updatePassword(passwordEncoder.encode(passwordForm.newPassword()));
+        accountRepository.save(account);
+    }
+
+    @Override
+    public void updateNotification(Account account, Notifications notifications) {
+        account.updateNotification(notifications);
         accountRepository.save(account);
     }
 
