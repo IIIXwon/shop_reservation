@@ -124,7 +124,7 @@ public class AccountController {
             return CHECK_LOGIN_EMAIL;
         }
 
-        if (!account.isValidEmailLoginToken()) {
+        if (account.getEmailLoginTokenIssueTime() != null && !account.isValidEmailLoginToken()) {
             model.addAttribute("error", "이메일 로그인은 1시간 뒤에 사용할 수 있습니다.");
             return CHECK_LOGIN_EMAIL;
         }

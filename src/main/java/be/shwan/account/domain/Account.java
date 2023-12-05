@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -53,8 +54,9 @@ public class Account {
     private String emailLoginToken;
     private LocalDateTime emailLoginTokenIssueTime;
 
-    @ManyToMany()
-    private Set<Tag> Tags;
+    @ManyToMany
+    private Set<Tag> tags = new HashSet<>();
+
     public Account(String nickname, String password, String email) {
         this.nickname = nickname;
         this.password = password;
@@ -121,5 +123,13 @@ public class Account {
 
     public boolean isValidEmailLoginToken() {
         return LocalDateTime.now().isAfter(emailLoginTokenIssueTime.plusHours(1L));
+    }
+
+    public void addTag(Tag tag) {
+        tags.add(tag);
+    }
+
+    public void removeTag(Tag tag) {
+        this.tags.remove(tag);
     }
 }

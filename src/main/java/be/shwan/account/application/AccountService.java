@@ -7,8 +7,10 @@ import be.shwan.settings.dto.NicknameForm;
 import be.shwan.settings.dto.Notifications;
 import be.shwan.settings.dto.PasswordForm;
 import be.shwan.settings.dto.ProfileInfo;
-import jakarta.validation.Valid;
+import be.shwan.tag.domain.Tag;
 import org.springframework.security.core.userdetails.UserDetailsService;
+
+import java.util.Set;
 
 public interface AccountService extends UserDetailsService{
     AccountResponseRecord getAccountInfo(Long id);
@@ -32,4 +34,10 @@ public interface AccountService extends UserDetailsService{
     void sendEmailLoginUrl(Account account);
 
     void sendEmailLogin(Account account, String token);
+
+    void addTag(Account account, Tag tag);
+
+    Set<Tag> getTags(Account account);
+
+    void removeTag(Account account, Tag tag);
 }

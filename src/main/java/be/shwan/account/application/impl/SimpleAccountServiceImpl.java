@@ -10,7 +10,7 @@ import be.shwan.settings.dto.NicknameForm;
 import be.shwan.settings.dto.Notifications;
 import be.shwan.settings.dto.PasswordForm;
 import be.shwan.settings.dto.ProfileInfo;
-import jakarta.validation.Valid;
+import be.shwan.tag.domain.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -24,6 +24,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 @Service
 @Transactional
@@ -74,6 +76,26 @@ public class SimpleAccountServiceImpl implements AccountService {
         } else {
             throw new IllegalArgumentException("유효하지 않은 " + token + " 값 입니다.");
         }
+    }
+
+    @Override
+    public void addTag(Account account, Tag tag) {
+        Optional<Account> byId = accountRepository.findById(account.getId());
+        byId.ifPresent(a -> {
+            a.getTags().add(tag);
+        });
+    }
+
+    @Override
+    public Set<Tag> getTags(Account account) {
+        Optional<Account> byId = accountRepository.findById(account.getId());
+        return byId.orElseThrow().getTags();
+    }
+
+    @Override
+    public void removeTag(Account account, Tag tag) {
+        Optional<Account> byId = accountRepository.findById(account.getId());
+        byId.ifPresent(a -> a.removeTag(tag));
     }
 
     public void sendEmailToken(Account account) {

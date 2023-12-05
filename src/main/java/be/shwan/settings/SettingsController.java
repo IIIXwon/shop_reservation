@@ -7,8 +7,14 @@ import be.shwan.account.domain.CurrentUser;
 import be.shwan.account.dto.SignUpFormDto;
 import be.shwan.account.dto.SignUpFormValidator;
 import be.shwan.settings.dto.*;
+import be.shwan.tag.domain.Tag;
+import be.shwan.tag.domain.TagRepository;
+import be.shwan.tag.dto.RequestTagDto;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
@@ -16,14 +22,21 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @Controller
 @RequestMapping(value = {"/settings"})
 @RequiredArgsConstructor
 public class SettingsController {
 
     private final AccountService accountService;
+    private final TagRepository tagRepository;
 
     private final NicknameFormValidator nicknameFormValidator;
+
+    private final ObjectMapper objectMapper;
     final String PROFILE_PATH = "/profile";
     final String PROFILE_VIEW = "/settings/profile";
     final String PASSWORD_VIEW = "/settings/password";
@@ -64,7 +77,7 @@ public class SettingsController {
     }
 
     @GetMapping(value = {PASSWORD_PATH})
-    public String passwordPage(Model model){
+    public String passwordPage(Model model) {
         model.addAttribute(new PasswordForm("", ""));
         return PASSWORD_VIEW;
     }
@@ -106,7 +119,7 @@ public class SettingsController {
 
     @PostMapping(value = {"/account"})
     public String updateAccount(@CurrentUser Account account, @Valid NicknameForm nicknameForm, Errors errors,
-                                 RedirectAttributes redirectAttributes) {
+                                RedirectAttributes redirectAttributes) {
         if (errors.hasErrors()) {
             return ACCOUNT_VIEW;
         }
@@ -116,7 +129,33 @@ public class SettingsController {
     }
 
     @GetMapping(value = {"/tags"})
-    public String tagPage() {
+    public String tagPage(@CurrentUser Account account, Model model) throws JsonProcessingException {
+        Set<Tag> tags = accountService.getTags(account);
+        model.addAttribute("tags", tags.stream().map(Tag::getTitle).collect(Collectors.toList()));
+        List<String> allTags = tagRepository.findAll().stream().map(Tag::getTitle).toList();
+        model.addAttribute("whitelist", objectMapper.writeValueAsString(allTags));
         return "/settings/tags";
+    }
+
+    @PostMapping(value = {"/tags/add"})
+    @ResponseBody
+    public ResponseEntity addTag(@CurrentUser Account account, @RequestBody RequestTagDto tagDto) {
+        Tag tag = tagRepository.findByTitle(tagDto.tagTitle());
+        if (tag == null) {
+            tag = tagRepository.save(new Tag(tagDto));
+        }
+        accountService.addTag(account, tag);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping(value = {"/tags/remove"})
+    @ResponseBody
+    public ResponseEntity removeTag(@CurrentUser Account account, @RequestBody RequestTagDto tagDto) {
+        Tag tag = tagRepository.findByTitle(tagDto.tagTitle());
+        if (tag == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        accountService.removeTag(account, tag);
+        return ResponseEntity.ok().build();
     }
 }

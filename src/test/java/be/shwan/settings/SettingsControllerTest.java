@@ -6,6 +6,9 @@ import be.shwan.account.domain.AccountRepository;
 import be.shwan.account.dto.SignUpFormDto;
 import be.shwan.settings.dto.Notifications;
 import be.shwan.settings.dto.ProfileInfo;
+import be.shwan.tag.domain.Tag;
+import be.shwan.tag.domain.TagRepository;
+import be.shwan.tag.dto.RequestTagDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,8 +21,11 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.TestExecutionEvent;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -28,6 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 class SettingsControllerTest {
     @Autowired
     MockMvc mockMvc;
@@ -37,6 +44,9 @@ class SettingsControllerTest {
 
     @Autowired
     AccountService accountService;
+
+    @Autowired
+    TagRepository tagRepository;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -59,6 +69,7 @@ class SettingsControllerTest {
     @AfterEach
     void clear() {
         accountRepository.deleteAll();
+        tagRepository.deleteAll();
     }
 
     @WithUserDetails(value = "seunghwan", setupBefore = TestExecutionEvent.TEST_EXECUTION)
@@ -215,14 +226,14 @@ class SettingsControllerTest {
     void testUpdateAccount() throws Exception {
 
         mockMvc.perform(post("/settings/account")
-                        .param("nickname", "wonseunghwan")
+                        .param("nickname", "2hwan")
                         .with(csrf())
                 )
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/settings/account"))
                 .andExpect(model().attributeDoesNotExist("errors"))
                 .andExpect(flash().attributeExists("message"))
-                .andExpect(authenticated().withUsername("wonseunghwan"))
+                .andExpect(authenticated().withUsername("2hwan"))
         ;
     }
 
@@ -240,6 +251,59 @@ class SettingsControllerTest {
                 .andExpect(model().hasErrors())
                 .andExpect(authenticated().withUsername("seunghwan"))
         ;
+    }
+
+    @WithUserDetails(value = "seunghwan", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @DisplayName("[GET] /settings/tags, 관심 주제 페이지")
+    @Test
+    void testTagPage() throws Exception {
+        mockMvc.perform(get("/settings/tags"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("/settings/tags"))
+                .andExpect(model().attributeExists("tags", "whitelist"))
+                .andExpect(authenticated().withUsername("seunghwan"))
+        ;
+    }
+
+    @WithUserDetails(value = "seunghwan", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @DisplayName("[POST] /settings/tag/add, 관심 주제 추가")
+    @Test
+    void testUpdateTag() throws Exception {
+        RequestTagDto requestTagDto = new RequestTagDto("리그오브레전드");
+        mockMvc.perform(post("/settings/tags/add")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestTagDto))
+                        .with(csrf())
+                )
+                .andExpect(status().isOk())
+                .andExpect(authenticated().withUsername("seunghwan"))
+        ;
+
+        Tag tag = tagRepository.findByTitle("리그오브레전드");
+        assertNotNull(tag);
+        Account byNickname = accountRepository.findByNickname("seunghwan");
+        assertTrue(byNickname.getTags().contains(tag));
+    }
+
+    @WithUserDetails(value = "seunghwan", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @DisplayName("[POST] /settings/tag/remove, 관심 주제 삭제")
+    @Test
+    void testRemoveTag() throws Exception {
+        RequestTagDto requestTagDto = new RequestTagDto("리그오브레전드");
+        Tag tag = new Tag(requestTagDto);
+        tagRepository.save(tag);
+        accountService.addTag(account, tag);
+        mockMvc.perform(post("/settings/tags/remove")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestTagDto))
+                        .with(csrf())
+                )
+                .andExpect(status().isOk())
+                .andExpect(authenticated().withUsername("seunghwan"))
+        ;
+
+        Account byNickname = accountRepository.findByNickname("seunghwan");
+        assertEquals(0, byNickname.getTags().size());
     }
 
 }

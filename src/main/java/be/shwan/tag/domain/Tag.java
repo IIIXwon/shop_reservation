@@ -1,9 +1,13 @@
 package be.shwan.tag.domain;
 
+import be.shwan.tag.dto.RequestTagDto;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EqualsAndHashCode(of = "id")
 @Getter
 @Entity
@@ -14,4 +18,8 @@ public class Tag {
 
     @Column(unique = true, nullable = false)
     private String title;
+
+    public Tag(RequestTagDto tagDto) {
+        this.title = tagDto.tagTitle();
+    }
 }
