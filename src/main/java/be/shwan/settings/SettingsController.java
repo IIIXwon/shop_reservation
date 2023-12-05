@@ -114,4 +114,9 @@ public class SettingsController {
         redirectAttributes.addFlashAttribute("message", "계정을 수정 했습니다.");
         return "redirect:/settings/account";
     }
+
+    @GetMapping(value = {"/tags"})
+    public String tagPage() {
+        return "/settings/tags";
+    }
 }
