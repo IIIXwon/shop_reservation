@@ -4,7 +4,9 @@ import be.shwan.account.application.AccountService;
 import be.shwan.account.domain.Account;
 import be.shwan.account.domain.AccountRepository;
 import be.shwan.account.dto.SignUpFormDto;
+import be.shwan.settings.dto.Notifications;
 import be.shwan.settings.dto.ProfileInfo;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -12,10 +14,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.TestExecutionEvent;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -34,6 +38,10 @@ class SettingsControllerTest {
     @Autowired
     AccountService accountService;
 
+    @Autowired
+    ObjectMapper objectMapper;
+
+    Account account;
 
     @BeforeEach
     void init() throws Exception {
@@ -45,8 +53,7 @@ class SettingsControllerTest {
                 .email("seunghw@dkjhds.com")
                 .build();
 
-        Account account = accountService.processNewAccount(request);
-//        accountService.login(account);
+        account = accountService.processNewAccount(request);
     }
 
     @AfterEach
@@ -87,6 +94,9 @@ class SettingsControllerTest {
                 .andExpect(flash().attributeExists("message"))
                 .andExpect(authenticated().withUsername("seunghwan"))
         ;
+
+        Account byNickname = accountRepository.findByNickname("seunghwan");
+        assertEquals(bio, byNickname.getBio());
     }
 
     @WithUserDetails(value = "seunghwan", setupBefore = TestExecutionEvent.TEST_EXECUTION)
@@ -105,4 +115,131 @@ class SettingsControllerTest {
                 .andExpect(authenticated().withUsername("seunghwan"))
         ;
     }
+
+    @WithUserDetails(value = "seunghwan", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @DisplayName("[GET] /settings/password, 비밀번호 변경 페이지")
+    @Test
+    void testPasswordPage() throws Exception {
+        mockMvc.perform(get("/settings/password"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("passwordForm"))
+                .andExpect(view().name("/settings/password"))
+                .andExpect(authenticated().withUsername("seunghwan"))
+        ;
+    }
+
+    @WithUserDetails(value = "seunghwan", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @DisplayName("[POST] /settings/password, 비밀번호 변경 성공")
+    @Test
+    void testUpdatePassword() throws Exception {
+
+        mockMvc.perform(post("/settings/password")
+                        .param("newPassword", "11223344")
+                        .param("newPasswordConfirm", "11223344")
+                        .with(csrf())
+                )
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/settings/password"))
+                .andExpect(model().attributeDoesNotExist("errors"))
+                .andExpect(flash().attributeExists("message"))
+                .andExpect(authenticated().withUsername("seunghwan"))
+        ;
+    }
+
+    @WithUserDetails(value = "seunghwan", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @DisplayName("[POST] /settings/password, 비밀번호 변경 실패")
+    @Test
+    void testUpdatePassword_fail() throws Exception {
+
+        mockMvc.perform(post("/settings/password")
+                        .param("newPassword", "11223344")
+                        .param("newPasswordConfirm", "11223345")
+                        .with(csrf())
+                )
+                .andExpect(status().isOk())
+                .andExpect(view().name("/settings/password"))
+                .andExpect(model().hasErrors())
+                .andExpect(authenticated().withUsername("seunghwan"))
+        ;
+    }
+
+    @WithUserDetails(value = "seunghwan", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @DisplayName("[GET] /settings/notifications, 알림 변경 페이지")
+    @Test
+    void testNotificationPage() throws Exception {
+        mockMvc.perform(get("/settings/notifications"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("notifications"))
+                .andExpect(view().name("/settings/notifications"))
+                .andExpect(authenticated().withUsername("seunghwan"))
+        ;
+    }
+
+    @WithUserDetails(value = "seunghwan", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @DisplayName("[POST] /settings/notifications, 알림 변경 성공")
+    @Test
+    void testUpdateNotification() throws Exception {
+        mockMvc.perform(post("/settings/notifications")
+                        .param("studyCreatedByEmail", Boolean.TRUE.toString())
+                        .param("studyCreatedByWeb", Boolean.TRUE.toString())
+                        .param("studyEnrollmentResultByEmail", Boolean.TRUE.toString())
+                        .param("studyEnrollmentResultByWeb", Boolean.TRUE.toString())
+                        .param("studyUpdatedByEmail", Boolean.TRUE.toString())
+                        .param("studyUpdatedByWeb", Boolean.TRUE.toString())
+                        .with(csrf())
+                )
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/settings/notifications"))
+                .andExpect(model().attributeDoesNotExist("errors"))
+                .andExpect(flash().attributeExists("message"))
+                .andExpect(authenticated().withUsername("seunghwan"))
+        ;
+    }
+
+
+    @WithUserDetails(value = "seunghwan", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @DisplayName("[GET] /settings/account, 계정 정보 변경 페이지")
+    @Test
+    void testAccountPage() throws Exception {
+        mockMvc.perform(get("/settings/account"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("nicknameForm"))
+                .andExpect(view().name("/settings/account"))
+                .andExpect(authenticated().withUsername("seunghwan"))
+        ;
+    }
+
+    @WithUserDetails(value = "seunghwan", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @DisplayName("[POST] /settings/account, 계정 변경 성공")
+    @Test
+    void testUpdateAccount() throws Exception {
+
+        mockMvc.perform(post("/settings/account")
+                        .param("nickname", "wonseunghwan")
+                        .with(csrf())
+                )
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/settings/account"))
+                .andExpect(model().attributeDoesNotExist("errors"))
+                .andExpect(flash().attributeExists("message"))
+                .andExpect(authenticated().withUsername("wonseunghwan"))
+        ;
+    }
+
+    @WithUserDetails(value = "seunghwan", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @DisplayName("[POST] /settings/account, 계정 변경 실패")
+    @Test
+    void testUpdateAccount_fail() throws Exception {
+
+        mockMvc.perform(post("/settings/account")
+                        .param("nickname", "*****sdlfj")
+                        .with(csrf())
+                )
+                .andExpect(status().isOk())
+                .andExpect(view().name("/settings/account"))
+                .andExpect(model().hasErrors())
+                .andExpect(authenticated().withUsername("seunghwan"))
+        ;
+    }
+
 }
