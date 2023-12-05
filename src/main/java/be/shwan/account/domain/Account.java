@@ -3,6 +3,7 @@ package be.shwan.account.domain;
 import be.shwan.settings.dto.NicknameForm;
 import be.shwan.settings.dto.Notifications;
 import be.shwan.settings.dto.ProfileInfo;
+import be.shwan.tag.domain.Tag;
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import lombok.EqualsAndHashCode;
@@ -11,6 +12,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Set;
 import java.util.UUID;
 
 @NoArgsConstructor
@@ -51,6 +53,8 @@ public class Account {
     private String emailLoginToken;
     private LocalDateTime emailLoginTokenIssueTime;
 
+    @ManyToMany()
+    private Set<Tag> Tags;
     public Account(String nickname, String password, String email) {
         this.nickname = nickname;
         this.password = password;
