@@ -25,7 +25,7 @@ public class SettingsController {
     public String profilePage(@CurrentUser Account account, Model model) {
         model.addAttribute(account);
         model.addAttribute(new ProfileInfo(account.getBio(), account.getUrl(), account.getOccupation(),
-                account.getLocation()));
+                account.getLocation(), account.getProfileImage()));
         return PROFILE_VIEW;
     }
 

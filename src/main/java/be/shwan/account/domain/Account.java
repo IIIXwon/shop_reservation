@@ -27,6 +27,7 @@ public class Account {
     private String emailCheckToken;
     private LocalDateTime emailCheckTokenIssueTime;
 
+    @Lob
     private String profileImage;
     private String bio;
     private String url;
@@ -72,5 +73,6 @@ public class Account {
         this.url = profileInfo.url();
         this.occupation = profileInfo.occupation();
         this.location = profileInfo.location();
+        this.profileImage = profileInfo.profileImage();
     }
 }

@@ -10,6 +10,8 @@ public record ProfileInfo(
         @Length(max = 20)
         String occupation,
         @Length(max = 20)
-        String location) {
+        String location,
+
+        String profileImage) {
 
 }
