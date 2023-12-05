@@ -2,11 +2,11 @@ package be.shwan.settings;
 
 import be.shwan.account.application.AccountService;
 import be.shwan.account.domain.Account;
+import be.shwan.account.domain.AccountRepository;
 import be.shwan.account.domain.CurrentUser;
-import be.shwan.settings.dto.Notifications;
-import be.shwan.settings.dto.PasswordForm;
-import be.shwan.settings.dto.PasswordFormValidator;
-import be.shwan.settings.dto.ProfileInfo;
+import be.shwan.account.dto.SignUpFormDto;
+import be.shwan.account.dto.SignUpFormValidator;
+import be.shwan.settings.dto.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -22,17 +22,27 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class SettingsController {
 
     private final AccountService accountService;
+
+    private final NicknameFormValidator nicknameFormValidator;
     final String PROFILE_PATH = "/profile";
     final String PROFILE_VIEW = "/settings/profile";
     final String PASSWORD_VIEW = "/settings/password";
     private final String PASSWORD_PATH = "/password";
     private final String NOTIFICATION_PATH = "/notifications";
-    private final String NOTIFACATION_VIEW = "/settings/notifications";
+    private final String NOTIFICATION_VIEW = "/settings/notifications";
+    private final String ACCOUNT_VIEW = "/settings/account";
 
-    @InitBinder("passwordForm")
+    @InitBinder({"passwordForm"})
     public void initBinder(WebDataBinder webDataBinder) {
         webDataBinder.addValidators(new PasswordFormValidator());
+
     }
+
+    @InitBinder("nicknameForm")
+    public void initBinder2(WebDataBinder webDataBinder) {
+        webDataBinder.addValidators(nicknameFormValidator);
+    }
+
     @GetMapping(value = {PROFILE_PATH})
     public String profilePage(@CurrentUser Account account, Model model) {
         model.addAttribute(account);
@@ -74,17 +84,34 @@ public class SettingsController {
     public String notificationPage(@CurrentUser Account account, Model model) {
         model.addAttribute(new Notifications(account.isStudyCreatedByEmail(), account.isStudyCreatedByWeb(), account.isStudyEnrollmentResultByEmail(),
                 account.isStudyEnrollmentResultByWeb(), account.isStudyUpdatedByEmail(), account.isStudyUpdatedByWeb()));
-        return NOTIFACATION_VIEW;
+        return NOTIFICATION_VIEW;
     }
 
     @PostMapping(NOTIFICATION_PATH)
     public String updateNotification(@CurrentUser Account account, @Valid Notifications notifications, Errors errors,
                                      RedirectAttributes redirectAttributes) {
         if (errors.hasErrors()) {
-            return NOTIFACATION_VIEW;
+            return NOTIFICATION_VIEW;
         }
         accountService.updateNotification(account, notifications);
         redirectAttributes.addFlashAttribute("message", "알림을 수정 했습니다.");
         return "redirect:/settings/notifications";
+    }
+
+    @GetMapping(value = {"/account"})
+    public String accountPage(@CurrentUser Account account, Model model) {
+        model.addAttribute("nicknameForm", new NicknameForm(account.getNickname()));
+        return ACCOUNT_VIEW;
+    }
+
+    @PostMapping(value = {"/account"})
+    public String updateAccount(@CurrentUser Account account, @Valid NicknameForm nicknameForm, Errors errors,
+                                 RedirectAttributes redirectAttributes) {
+        if (errors.hasErrors()) {
+            return ACCOUNT_VIEW;
+        }
+        accountService.updateAccount(account, nicknameForm);
+        redirectAttributes.addFlashAttribute("message", "계정을 수정 했습니다.");
+        return "redirect:/settings/account";
     }
 }

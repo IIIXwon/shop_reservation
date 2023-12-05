@@ -6,9 +6,11 @@ import be.shwan.account.domain.AccountRepository;
 import be.shwan.account.domain.UserAccount;
 import be.shwan.account.dto.AccountResponseRecord;
 import be.shwan.account.dto.SignUpFormDto;
+import be.shwan.settings.dto.NicknameForm;
 import be.shwan.settings.dto.Notifications;
 import be.shwan.settings.dto.PasswordForm;
 import be.shwan.settings.dto.ProfileInfo;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -92,6 +94,12 @@ public class SimpleAccountServiceImpl implements AccountService {
     public void updateNotification(Account account, Notifications notifications) {
         account.updateNotification(notifications);
         accountRepository.save(account);
+    }
+
+    @Override
+    public void updateAccount(Account account, NicknameForm signUpFormDto) {
+        account.updateAccount(signUpFormDto);
+        login(account);
     }
 
 

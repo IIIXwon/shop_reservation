@@ -1,8 +1,10 @@
 package be.shwan.account.domain;
 
+import be.shwan.settings.dto.NicknameForm;
 import be.shwan.settings.dto.Notifications;
 import be.shwan.settings.dto.ProfileInfo;
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -77,6 +79,7 @@ public class Account {
     }
 
     public void updateProfile(ProfileInfo profileInfo) {
+
         this.bio = profileInfo.bio();
         this.url = profileInfo.url();
         this.occupation = profileInfo.occupation();
@@ -95,5 +98,9 @@ public class Account {
         this.studyEnrollmentResultByWeb = notifications.studyEnrollmentResultByWeb();
         this.studyUpdatedByEmail = notifications.studyUpdatedByEmail();
         this.studyUpdatedByWeb = notifications.studyUpdatedByWeb();
+    }
+
+    public void updateAccount(NicknameForm signUpFormDto) {
+        this.nickname = signUpFormDto.nickname();
     }
 }
