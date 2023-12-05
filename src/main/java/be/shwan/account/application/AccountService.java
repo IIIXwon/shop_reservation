@@ -8,6 +8,7 @@ import be.shwan.settings.dto.Notifications;
 import be.shwan.settings.dto.PasswordForm;
 import be.shwan.settings.dto.ProfileInfo;
 import be.shwan.tag.domain.Tag;
+import be.shwan.zone.domain.Zone;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.util.Set;
@@ -40,4 +41,10 @@ public interface AccountService extends UserDetailsService{
     Set<Tag> getTags(Account account);
 
     void removeTag(Account account, Tag tag);
+
+    void addZone(Account account, Zone zone);
+
+    void removeZone(Account account, Zone zone);
+
+    Set<Zone> getZones(Account account);
 }

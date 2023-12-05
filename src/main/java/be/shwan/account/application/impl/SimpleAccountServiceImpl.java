@@ -11,6 +11,7 @@ import be.shwan.settings.dto.Notifications;
 import be.shwan.settings.dto.PasswordForm;
 import be.shwan.settings.dto.ProfileInfo;
 import be.shwan.tag.domain.Tag;
+import be.shwan.zone.domain.Zone;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -96,6 +97,26 @@ public class SimpleAccountServiceImpl implements AccountService {
     public void removeTag(Account account, Tag tag) {
         Optional<Account> byId = accountRepository.findById(account.getId());
         byId.ifPresent(a -> a.removeTag(tag));
+    }
+
+    @Override
+    public void addZone(Account account, Zone zone) {
+        Optional<Account> byId = accountRepository.findById(account.getId());
+        byId.ifPresent(a -> {
+            a.addZone(zone);
+        });
+    }
+
+    @Override
+    public void removeZone(Account account, Zone zone) {
+        Optional<Account> byId = accountRepository.findById(account.getId());
+        byId.ifPresent(a -> a.removeZone(zone));
+    }
+
+    @Override
+    public Set<Zone> getZones(Account account) {
+        Optional<Account> byId = accountRepository.findById(account.getId());
+        return byId.orElseThrow().getZones();
     }
 
     public void sendEmailToken(Account account) {

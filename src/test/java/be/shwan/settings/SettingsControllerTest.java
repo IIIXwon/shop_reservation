@@ -9,6 +9,10 @@ import be.shwan.settings.dto.ProfileInfo;
 import be.shwan.tag.domain.Tag;
 import be.shwan.tag.domain.TagRepository;
 import be.shwan.tag.dto.RequestTagDto;
+import be.shwan.zone.application.ZoneService;
+import be.shwan.zone.domain.Zone;
+import be.shwan.zone.domain.ZoneRepository;
+import be.shwan.zone.dto.RequestZoneDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,6 +51,9 @@ class SettingsControllerTest {
 
     @Autowired
     TagRepository tagRepository;
+
+    @Autowired
+    ZoneService zoneService;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -306,4 +313,54 @@ class SettingsControllerTest {
         assertEquals(0, byNickname.getTags().size());
     }
 
+    @WithUserDetails(value = "seunghwan", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @DisplayName("[GET] /settings/zones, 활동 지역 페이지")
+    @Test
+    void testZonePage() throws Exception {
+        mockMvc.perform(get("/settings/zones"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("/settings/zones"))
+                .andExpect(model().attributeExists("zones", "whitelist"))
+                .andExpect(authenticated().withUsername("seunghwan"))
+        ;
+    }
+
+    @WithUserDetails(value = "seunghwan", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @DisplayName("[POST] /settings/zones/add, 활동 지역 추가")
+    @Test
+    void testUpdateZone() throws Exception {
+        RequestZoneDto requestZoneDto = new RequestZoneDto("Gunsan(군산시)/North Jeolla");
+        mockMvc.perform(post("/settings/zones/add")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestZoneDto))
+                        .with(csrf())
+                )
+                .andExpect(status().isOk())
+                .andExpect(authenticated().withUsername("seunghwan"))
+        ;
+
+        Zone zone = zoneService.findZone("Gunsan(군산시)/North Jeolla");
+        Account byNickname = accountRepository.findByNickname("seunghwan");
+        assertTrue(byNickname.getZones().contains(zone));
+    }
+
+    @WithUserDetails(value = "seunghwan", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @DisplayName("[POST] /settings/zones/remove, 활동 지역 삭제")
+    @Test
+    void testRemoveZone() throws Exception {
+        RequestZoneDto requestZoneDto = new RequestZoneDto("Gunsan(군산시)/North Jeolla");
+        Zone zone = zoneService.findZone("Gunsan(군산시)/North Jeolla");
+        accountService.addZone(account, zone);
+        mockMvc.perform(post("/settings/zones/remove")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestZoneDto))
+                        .with(csrf())
+                )
+                .andExpect(status().isOk())
+                .andExpect(authenticated().withUsername("seunghwan"))
+        ;
+
+        Account byNickname = accountRepository.findByNickname("seunghwan");
+        assertEquals(0, byNickname.getZones().size());
+    }
 }

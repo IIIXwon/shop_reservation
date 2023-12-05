@@ -10,6 +10,11 @@ import be.shwan.settings.dto.*;
 import be.shwan.tag.domain.Tag;
 import be.shwan.tag.domain.TagRepository;
 import be.shwan.tag.dto.RequestTagDto;
+import be.shwan.zone.application.ZoneService;
+import be.shwan.zone.domain.Zone;
+import be.shwan.zone.domain.ZoneRepository;
+import be.shwan.zone.dto.RequestZoneDto;
+import be.shwan.zone.dto.ResponseZoneDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
@@ -33,6 +38,9 @@ public class SettingsController {
 
     private final AccountService accountService;
     private final TagRepository tagRepository;
+
+    private final ZoneService zoneService;
+    private final ZoneRepository zoneRepository;
 
     private final NicknameFormValidator nicknameFormValidator;
 
@@ -156,6 +164,38 @@ public class SettingsController {
             return ResponseEntity.badRequest().build();
         }
         accountService.removeTag(account, tag);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping(value = {"/zones"})
+    public String zonePage(@CurrentUser Account account, Model model) throws JsonProcessingException {
+        Set<Zone> zones = accountService.getZones(account);
+        List<ResponseZoneDto> zoneList = zones.stream().map(z -> new ResponseZoneDto(z.getCity(), z.getLocalNameOfCity(), z.getProvince())).toList();
+        model.addAttribute("zones", zoneList);
+        List<String> whitlist = zoneRepository.findAll().stream().map(z -> new ResponseZoneDto(z.getCity(), z.getLocalNameOfCity(), z.getProvince()).toString()).toList();
+        model.addAttribute("whitelist", objectMapper.writeValueAsString(whitlist));
+        return "/settings/zones";
+    }
+
+    @PostMapping(value = {"/zones/add"})
+    @ResponseBody
+    public ResponseEntity addZone(@CurrentUser Account account, @RequestBody RequestZoneDto requestZoneDto) {
+        Zone zone = zoneService.findZone(requestZoneDto.zoneName());
+        if (zone == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        accountService.addZone(account, zone);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping(value = {"/zones/remove"})
+    @ResponseBody
+    public ResponseEntity removeZone(@CurrentUser Account account, @RequestBody RequestZoneDto requestZoneDto) {
+        Zone zone = zoneService.findZone(requestZoneDto.zoneName());
+        if (zone == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        accountService.removeZone(account, zone);
         return ResponseEntity.ok().build();
     }
 }

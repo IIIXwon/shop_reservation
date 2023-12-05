@@ -4,6 +4,7 @@ import be.shwan.settings.dto.NicknameForm;
 import be.shwan.settings.dto.Notifications;
 import be.shwan.settings.dto.ProfileInfo;
 import be.shwan.tag.domain.Tag;
+import be.shwan.zone.domain.Zone;
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import lombok.EqualsAndHashCode;
@@ -56,6 +57,9 @@ public class Account {
 
     @ManyToMany
     private Set<Tag> tags = new HashSet<>();
+
+    @ManyToMany
+    private Set<Zone> zones = new HashSet<>();
 
     public Account(String nickname, String password, String email) {
         this.nickname = nickname;
@@ -131,5 +135,13 @@ public class Account {
 
     public void removeTag(Tag tag) {
         this.tags.remove(tag);
+    }
+
+    public void addZone(Zone zone) {
+        zones.add(zone);
+    }
+
+    public void removeZone(Zone zone) {
+        zones.remove(zone);
     }
 }
