@@ -28,4 +28,8 @@ public interface AccountService extends UserDetailsService{
     void updateNotification(Account account, Notifications notifications);
 
     void updateAccount(Account account, NicknameForm signUpFormDto);
+
+    void sendEmailLoginUrl(Account account);
+
+    void sendEmailLogin(Account account, String token);
 }

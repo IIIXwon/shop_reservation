@@ -1,7 +1,10 @@
 package be.shwan.account.presentation;
 
+import be.shwan.account.application.AccountService;
 import be.shwan.account.domain.Account;
 import be.shwan.account.domain.AccountRepository;
+import be.shwan.account.dto.SignUpFormDto;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,6 +21,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
@@ -38,11 +43,13 @@ class AccountControllerTest {
     @Autowired
     AccountRepository accountRepository;
 
+    @Autowired
+    AccountService accountService;
     @MockBean
     JavaMailSender javaMailSender;
 
-    @BeforeEach
-    void init() {
+    @AfterEach
+    void end() {
         accountRepository.deleteAll();
     }
     @DisplayName("[GET] /sign-up 회원가입 페이지 접근")
@@ -122,6 +129,83 @@ class AccountControllerTest {
                 .andExpect(unauthenticated())
 
         ;
+    }
 
+    @DisplayName("[GET] /email-login, 이메일 로그인 화면")
+    @Test
+    void testEmailLoginPage() throws Exception {
+        mockMvc.perform(get("/email-login"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("accounts/email-login"))
+                .andExpect(unauthenticated())
+        ;
+    }
+
+    @DisplayName("[POST] /email-login, 이메일 로그인 url 발급 요청")
+    @Test
+    void testEmailLoginIssue() throws Exception {
+        SignUpFormDto testUser = SignUpFormDto.builder()
+                .email("test@test.com")
+                .password("12345678")
+                .nickname("testUser")
+                .build();
+        accountService.processNewAccount(testUser);
+
+        mockMvc.perform(post("/email-login").with(csrf())
+                        .param("email", "test@test.com"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("accounts/check-login-email"))
+                .andExpect(unauthenticated())
+        ;
+
+        Account account = accountRepository.findByEmail("test@test.com");
+        assertTrue(accountRepository.existsByEmail("test@test.com"));
+        assertNotNull(account.getEmailLoginToken());
+    }
+
+    @DisplayName("[POST] /email-login, 이메일 로그인 url 발급 실패")
+    @Test
+    void testEmailLoginIssue_fail() throws Exception {
+        mockMvc.perform(post("/email-login").with(csrf())
+                        .param("email", "tes2t@test.com"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("accounts/check-login-email"))
+                .andExpect(model().attributeExists("error"))
+                .andExpect(unauthenticated())
+        ;
+    }
+
+    @DisplayName("[POST] /login-by-email, 이메일 로그인 성공")
+    @Test
+    void testEmailLogin() throws Exception {
+
+        SignUpFormDto testUser = SignUpFormDto.builder()
+                .email("test@test.com")
+                .password("12345678")
+                .nickname("testUser")
+                .build();
+        Account newAccount = accountService.processNewAccount(testUser);
+        accountService.sendEmailLoginUrl(newAccount);
+
+        mockMvc.perform(get("/login-by-email")
+                        .param("email", newAccount.getEmail())
+                        .param("token", newAccount.getEmailLoginToken()))
+                .andExpect(status().isOk())
+                .andExpect(view().name("accounts/logged-in-by-email"))
+                .andExpect(authenticated().withUsername("testUser"))
+        ;
+    }
+
+    @DisplayName("[POST] /login-by-email, 이메일 로그인 실패")
+    @Test
+    void testEmailLogin_fail() throws Exception {
+        mockMvc.perform(get("/login-by-email")
+                        .param("email", "")
+                        .param("token", ""))
+                .andExpect(status().isOk())
+                .andExpect(view().name("accounts/logged-in-by-email"))
+                .andExpect(model().attributeExists("error"))
+                .andExpect(unauthenticated())
+        ;
     }
 }

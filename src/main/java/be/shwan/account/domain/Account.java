@@ -48,6 +48,8 @@ public class Account {
     private LocalDate lastUpdateDate;
 
     private boolean active;
+    private String emailLoginToken;
+    private LocalDateTime emailLoginTokenIssueTime;
 
     public Account(String nickname, String password, String email) {
         this.nickname = nickname;
@@ -102,5 +104,18 @@ public class Account {
 
     public void updateAccount(NicknameForm signUpFormDto) {
         this.nickname = signUpFormDto.nickname();
+    }
+
+    public void issueEmailLoginToken() {
+        this.emailLoginToken = UUID.randomUUID().toString();
+        this.emailLoginTokenIssueTime = LocalDateTime.now();
+    }
+
+    public boolean isValidEmailLoginToken(String token) {
+        return this.emailLoginToken.equals(token);
+    }
+
+    public boolean isValidEmailLoginToken() {
+        return LocalDateTime.now().isAfter(emailLoginTokenIssueTime.plusHours(1L));
     }
 }

@@ -29,6 +29,8 @@ public class AccountController {
     private final String SIGN_UP_PAGE = "accounts/sign-up";
     private final String CHECK_EMAIL_VIEW = "accounts/check-email";
     private final String REDIRECT_ROOT = "redirect:/";
+    private final String CHECK_LOGIN_EMAIL = "accounts/check-login-email";
+    private final String LOGGED_IN_BY_EMAIL = "accounts/logged-in-by-email";
 
     @InitBinder("signUpFormDto")
     public void initBinder(WebDataBinder webDataBinder) {
@@ -99,12 +101,45 @@ public class AccountController {
     @GetMapping(value = {"/profile/{nickname}"})
     public String profilePage(@PathVariable String nickname, @CurrentUser Account account, Model model) {
         Account byNickname = accountRepository.findByNickname(nickname);
-        if(byNickname == null) {
+        if (byNickname == null) {
             throw new IllegalArgumentException(nickname + "에 해당하는 사용자가 없습니다.");
         }
 
         model.addAttribute(byNickname);
         model.addAttribute("isOwner", byNickname.equals(account));
         return "accounts/profile";
+    }
+
+    @GetMapping(value = {"/email-login"})
+    public String emailLoginPage() {
+        return "accounts/email-login";
+    }
+
+    @PostMapping(value = {"/email-login"})
+    public String emailLoginPage(@RequestParam String email, Model model) {
+        Account account = accountRepository.findByEmail(email);
+        if (account == null) {
+            model.addAttribute("error", "");
+            model.addAttribute("email", email);
+            return CHECK_LOGIN_EMAIL;
+        }
+
+        if (!account.isValidEmailLoginToken()) {
+            model.addAttribute("error", "이메일 로그인은 1시간 뒤에 사용할 수 있습니다.");
+            return CHECK_LOGIN_EMAIL;
+        }
+        accountService.sendEmailLoginUrl(account);
+        return CHECK_LOGIN_EMAIL;
+    }
+
+    @GetMapping(value = {"/login-by-email"})
+    public String emailLoginCompletePage(@RequestParam String token, @RequestParam String email, Model model) {
+        Account account = accountRepository.findByEmail(email);
+        if (account == null) {
+            model.addAttribute("error", "");
+            return LOGGED_IN_BY_EMAIL;
+        }
+        accountService.sendEmailLogin(account, token);
+        return LOGGED_IN_BY_EMAIL;
     }
 }

@@ -41,7 +41,7 @@ public class SecurityConfig {
                 authorize
                         // api
                         .requestMatchers("/", "/login", "/sign-up", "/check-email-token",
-                                "/email-login", "/check-email-login", "login-link").permitAll()
+                                "/email-login", "/check-email-login", "/login-by-email").permitAll()
                         .requestMatchers(HttpMethod.GET, "/profile/**").permitAll()
                         // web
                         .requestMatchers(HttpMethod.GET, "/images/**").permitAll()

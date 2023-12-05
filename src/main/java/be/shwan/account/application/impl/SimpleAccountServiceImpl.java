@@ -63,6 +63,19 @@ public class SimpleAccountServiceImpl implements AccountService {
         SecurityContextHolder.getContext().setAuthentication(token);
     }
 
+    @Override
+    public void sendEmailLogin(Account account, String token) {
+        if (account.isValidEmailLoginToken(token)) {
+            UsernamePasswordAuthenticationToken user = new UsernamePasswordAuthenticationToken(
+                    new UserAccount(account),
+                    account.getPassword(),
+                    List.of(new SimpleGrantedAuthority("ROLE_USER")));
+            SecurityContextHolder.getContext().setAuthentication(user);
+        } else {
+            throw new IllegalArgumentException("유효하지 않은 " + token + " 값 입니다.");
+        }
+    }
+
     public void sendEmailToken(Account account) {
         SimpleMailMessage mailMessage = new SimpleMailMessage();
         mailMessage.setSubject("스터디올레 회원 가입 인증");
@@ -71,6 +84,18 @@ public class SimpleAccountServiceImpl implements AccountService {
         javaMailSender.send(mailMessage);
         account.sendEmailCheckToken();
     }
+
+    @Override
+    public void sendEmailLoginUrl(Account account) {
+        SimpleMailMessage mailMessage = new SimpleMailMessage();
+        account.issueEmailLoginToken();
+        mailMessage.setSubject("스터디올레 이메일 로그인 안내");
+        mailMessage.setText("/login-by-email?token=" + account.getEmailLoginToken() + "&email=" + account.getEmail());
+        mailMessage.setTo(account.getEmail());
+        javaMailSender.send(mailMessage);
+    }
+
+
 
     @Override
     public void completeSignUp(Account account) {
@@ -101,6 +126,8 @@ public class SimpleAccountServiceImpl implements AccountService {
         account.updateAccount(signUpFormDto);
         login(account);
     }
+
+
 
 
     private AccountResponseRecord getAccountRecord(Account newAccount) {
