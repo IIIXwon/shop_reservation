@@ -1,6 +1,7 @@
 package be.shwan.study.application.impl;
 
 import be.shwan.account.domain.Account;
+import be.shwan.account.domain.AccountRepository;
 import be.shwan.study.application.StudyService;
 import be.shwan.study.domain.Study;
 import be.shwan.study.domain.StudyRepository;
@@ -16,11 +17,12 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class SimpleStudyServiceImpl implements StudyService {
     private final StudyRepository studyRepository;
+    private final AccountRepository accountRepository;
+
     @Override
     public Study newStudy(Account account, StudyRequestDto studyRequestDto) {
         Study study = new Study(studyRequestDto.path(), studyRequestDto.title(), studyRequestDto.shortDescription(),
                 studyRequestDto.fullDescription());
-        study.addManager(account);
         return studyRepository.save(study);
     }
 }

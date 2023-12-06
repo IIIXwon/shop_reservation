@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 @Slf4j
-@Profile("local")
+@Profile({"local", "test"})
 @Service
 public class ConsoleEmailServiceImpl implements EmailService {
     @Override
