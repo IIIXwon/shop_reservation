@@ -2,6 +2,7 @@ package be.shwan.study.domain;
 
 import be.shwan.account.domain.Account;
 import be.shwan.account.domain.UserAccount;
+import be.shwan.study.dto.StudyDescriptionRequestDto;
 import be.shwan.tag.domain.Tag;
 import be.shwan.zone.domain.Zone;
 import jakarta.persistence.*;
@@ -92,5 +93,10 @@ public class Study {
     public boolean isMember(UserAccount userAccount) {
         Account account = userAccount.getAccount();
         return members.contains(account);
+    }
+
+    public void updateDescription(StudyDescriptionRequestDto studyDescriptionRequestDto) {
+        this.shortDescription = studyDescriptionRequestDto.shortDescription();
+        this.fullDescription = studyDescriptionRequestDto.fullDescription();
     }
 }

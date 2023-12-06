@@ -3,6 +3,7 @@ package be.shwan.account.domain;
 import be.shwan.settings.dto.NicknameForm;
 import be.shwan.settings.dto.Notifications;
 import be.shwan.settings.dto.ProfileInfo;
+import be.shwan.study.domain.Study;
 import be.shwan.tag.domain.Tag;
 import be.shwan.zone.domain.Zone;
 import jakarta.persistence.*;
@@ -143,5 +144,9 @@ public class Account {
 
     public void removeZone(Zone zone) {
         zones.remove(zone);
+    }
+
+    public boolean isManagerOf(Study study) {
+        return study.getManagers().contains(this);
     }
 }
