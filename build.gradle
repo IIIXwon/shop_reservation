@@ -118,4 +118,16 @@ task copyPrivate(type: Copy) {
         include "application.yml"
         into 'src/main/resources'
     }
+
+    copy {
+        from './be-security'
+        include "application-dev.yml"
+        into 'src/main/resources'
+    }
+
+    copy {
+        from './be-security'
+        include "application-test.yml"
+        into 'src/test/resources'
+    }
 }

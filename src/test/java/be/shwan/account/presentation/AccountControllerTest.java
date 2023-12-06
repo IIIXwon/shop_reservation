@@ -4,6 +4,8 @@ import be.shwan.account.application.AccountService;
 import be.shwan.account.domain.Account;
 import be.shwan.account.domain.AccountRepository;
 import be.shwan.account.dto.SignUpFormDto;
+import be.shwan.mail.application.EmailService;
+import be.shwan.mail.dto.EmailMessage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
+@ActiveProfiles("local")
 class AccountControllerTest {
 
     private final String accountView = "accounts/sign-up";
@@ -46,7 +50,7 @@ class AccountControllerTest {
     @Autowired
     AccountService accountService;
     @MockBean
-    JavaMailSender javaMailSender;
+    EmailService emailService;
 
     @AfterEach
     void end() {
@@ -80,7 +84,7 @@ class AccountControllerTest {
         Account account = accountRepository.findByEmail("asdf@adsf.com");
         assertTrue(accountRepository.existsByEmail("asdf@adsf.com"));
         assertNotNull(account.getEmailCheckToken());
-        then(javaMailSender).should().send(any(SimpleMailMessage.class));
+        then(emailService).should().sendEmail(any(EmailMessage.class));
     }
 
     @DisplayName("[POST] /sign-up 회원가입 실패")

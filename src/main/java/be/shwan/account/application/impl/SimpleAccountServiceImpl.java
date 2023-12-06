@@ -6,6 +6,9 @@ import be.shwan.account.domain.AccountRepository;
 import be.shwan.account.domain.UserAccount;
 import be.shwan.account.dto.AccountResponseRecord;
 import be.shwan.account.dto.SignUpFormDto;
+import be.shwan.config.AppProperties;
+import be.shwan.mail.application.EmailService;
+import be.shwan.mail.dto.EmailMessage;
 import be.shwan.settings.dto.NicknameForm;
 import be.shwan.settings.dto.Notifications;
 import be.shwan.settings.dto.PasswordForm;
@@ -13,8 +16,7 @@ import be.shwan.settings.dto.ProfileInfo;
 import be.shwan.tag.domain.Tag;
 import be.shwan.zone.domain.Zone;
 import lombok.RequiredArgsConstructor;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,11 +25,17 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.util.UriUtils;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -35,7 +43,9 @@ public class SimpleAccountServiceImpl implements AccountService {
 
     private final AccountRepository accountRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JavaMailSender javaMailSender;
+    private final EmailService emailService;
+    private final TemplateEngine templateEngine;
+    private final AppProperties appProperties;
 
     private Account signUp(SignUpFormDto requestDto) {
         Account account = new Account(requestDto.nickname(), passwordEncoder.encode(requestDto.password()),
@@ -120,24 +130,33 @@ public class SimpleAccountServiceImpl implements AccountService {
     }
 
     public void sendEmailToken(Account account) {
-        SimpleMailMessage mailMessage = new SimpleMailMessage();
-        mailMessage.setSubject("스터디올레 회원 가입 인증");
-        mailMessage.setText("/check-email-token?token=" + account.getEmailCheckToken() + "&email=" + account.getEmail());
-        mailMessage.setTo(account.getEmail());
-        javaMailSender.send(mailMessage);
+        String linkMessage = "/check-email-token?token=" + account.getEmailCheckToken() + "&email=" + account.getEmail();
+        String process = htmlEmailTemplate(account, linkMessage);
+        EmailMessage emailMessage = new EmailMessage(account.getEmail(), "스터디올레 회원 가입 인증",
+                process);
+        emailService.sendEmail(emailMessage);
         account.sendEmailCheckToken();
     }
 
     @Override
     public void sendEmailLoginUrl(Account account) {
-        SimpleMailMessage mailMessage = new SimpleMailMessage();
         account.issueEmailLoginToken();
-        mailMessage.setSubject("스터디올레 이메일 로그인 안내");
-        mailMessage.setText("/login-by-email?token=" + account.getEmailLoginToken() + "&email=" + account.getEmail());
-        mailMessage.setTo(account.getEmail());
-        javaMailSender.send(mailMessage);
+        String linkMessage = "/login-by-email?token=" + account.getEmailLoginToken() + "&email=" + account.getEmail();
+        String htmlEmailTemplate = htmlEmailTemplate(account, linkMessage);
+        EmailMessage emailMessage = new EmailMessage(account.getEmail(), "스터디올레 이메일 로그인 안내", htmlEmailTemplate);
+        emailService.sendEmail(emailMessage);
     }
 
+    private String htmlEmailTemplate(Account account, String linkMessage) {
+        Context context = new Context();
+        context.setVariable("nickname", account.getNickname());
+        context.setVariable("message", "스터디올래 서비스를 사용하려면 링크를 클릭하세요.");
+        context.setVariable("linkName", "이메일 인증하기");
+        context.setVariable("host", appProperties.getHost());
+        context.setVariable("link", linkMessage);
+        String process = templateEngine.process("mail/simple-link", context);
+        return process;
+    }
 
 
     @Override
