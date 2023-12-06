@@ -59,4 +59,15 @@ public class Study {
     private boolean closed;
 
     private boolean useBanner;
+
+    public Study(String path, String title, String shotDescription, String fullDescription) {
+        this.path = path;
+        this.title = title;
+        this.shotDescription = shotDescription;
+        this.fullDescription = fullDescription;
+    }
+
+    public void addManager(Account account) {
+        managers.add(account);
+    }
 }
