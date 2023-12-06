@@ -7,6 +7,10 @@ import be.shwan.study.application.StudyService;
 import be.shwan.study.domain.Study;
 import be.shwan.study.domain.StudyRepository;
 import be.shwan.study.dto.StudyRequestDto;
+import be.shwan.tag.application.TagService;
+import be.shwan.tag.dto.RequestTagDto;
+import be.shwan.zone.dto.RequestZoneDto;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,9 +43,15 @@ class StudyControllerTest {
     StudyService studyService;
 
     @Autowired
+    TagService tagService;
+
+    @Autowired
     AccountRepository accountRepository;
     @Autowired
     StudyRepository studyRepository;
+
+    @Autowired
+    ObjectMapper objectMapper;
 
     @BeforeEach
     void init() {
@@ -50,7 +61,7 @@ class StudyControllerTest {
         String testFullDescription = "testFullDescription";
         Account byNickname = accountRepository.findByNickname(USER_NAME);
         StudyRequestDto studyRequestDto = new StudyRequestDto(path, testTitle, testShotDescription, testFullDescription);
-        Study study = studyService.newStudy(byNickname, studyRequestDto);
+        studyService.newStudy(byNickname, studyRequestDto);
     }
     @AfterEach
     void afterEach() {
@@ -220,4 +231,108 @@ class StudyControllerTest {
         Study byPath = studyRepository.findByPath(path);
         assertFalse(byPath.isUseBanner());
     }
+
+    @WithAccount(USER_NAME)
+    @DisplayName("[GET] /study/{path}/settings/tags, 스터디 수정 페이지 tag")
+    @Test
+    void testStudySettingsPageTags() throws Exception {
+        String path = "testPath";
+        mockMvc.perform(get("/study/{path}/settings/tags", path))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("whitelist", "study", "tags"))
+                .andExpect(view().name("study/settings/tags"))
+                .andExpect(authenticated().withUsername(USER_NAME))
+        ;
+    }
+
+    @WithAccount(USER_NAME)
+    @DisplayName("[POST] /study/{path}/settings/tags/add, 스터디 tag 추가")
+    @Test
+    void testStudyTagsAdd() throws Exception {
+        RequestTagDto requestTagDto = new RequestTagDto("game");
+        String path = "testPath";
+        mockMvc.perform(post("/study/{path}/settings/tags/add", path)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestTagDto))
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(authenticated().withUsername(USER_NAME))
+        ;
+
+        Study study = studyService.getStudy(path);
+        assertEquals(1, study.getTags().size());
+    }
+
+
+    @WithAccount(USER_NAME)
+    @DisplayName("[POST] /study/{path}/settings/tags/remove, 스터디 tag 제거")
+    @Test
+    void testStudyTagsRemove() throws Exception {
+        RequestTagDto requestTagDto = new RequestTagDto("game");
+        tagService.getTag(requestTagDto);
+        String path = "testPath";
+        mockMvc.perform(post("/study/{path}/settings/tags/remove", path)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestTagDto))
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(authenticated().withUsername(USER_NAME))
+        ;
+
+        Study study = studyService.getStudy(path);
+        assertEquals(0, study.getTags().size());
+    }
+
+    @WithAccount(USER_NAME)
+    @DisplayName("[GET] /study/{path}/settings/zones, 스터디 수정 페이지 zone")
+    @Test
+    void testStudySettingsPageZones() throws Exception {
+        String path = "testPath";
+        mockMvc.perform(get("/study/{path}/settings/zones", path))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("whitelist", "study" , "zones"))
+                .andExpect(view().name("study/settings/zones"))
+                .andExpect(authenticated().withUsername(USER_NAME))
+        ;
+    }
+
+    @WithAccount(USER_NAME)
+    @DisplayName("[POST] /study/{path}/settings/zones/add, 스터디 zone 추가")
+    @Test
+    void testStudyZonesAdd() throws Exception {
+        RequestZoneDto requestZoneDto = new RequestZoneDto("Andong(안동시)/North Gyeongsang");
+        String path = "testPath";
+        mockMvc.perform(post("/study/{path}/settings/zones/add", path)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestZoneDto))
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(authenticated().withUsername(USER_NAME))
+        ;
+
+        Study study = studyService.getStudy(path);
+        assertEquals(1, study.getZones().size());
+    }
+
+
+    @WithAccount(USER_NAME)
+    @DisplayName("[POST] /study/{path}/settings/zones/remove, 스터디 zone 제거")
+    @Test
+    void testStudyZonesRemove() throws Exception {
+        String path = "testPath";
+        Study study = studyService.getStudy(path);
+        RequestZoneDto requestZoneDto = new RequestZoneDto("Andong(안동시)/North Gyeongsang");
+        studyService.addZone(study, requestZoneDto);
+        mockMvc.perform(post("/study/{path}/settings/zones/remove", path)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestZoneDto))
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(authenticated().withUsername(USER_NAME))
+        ;
+
+        assertEquals(0, study.getZones().size());
+    }
+
+
 }

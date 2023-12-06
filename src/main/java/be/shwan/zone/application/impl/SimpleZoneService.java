@@ -3,6 +3,7 @@ package be.shwan.zone.application.impl;
 import be.shwan.zone.application.ZoneService;
 import be.shwan.zone.domain.Zone;
 import be.shwan.zone.domain.ZoneRepository;
+import be.shwan.zone.dto.ResponseZoneDto;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ClassPathResource;
@@ -13,7 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -52,5 +55,17 @@ public class SimpleZoneService implements ZoneService {
             return zone;
         }
         return null;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ResponseZoneDto> tagifyZonesToResponseZoneDto(Collection<Zone> zones) {
+        return zones.stream().map(z -> new ResponseZoneDto(z.getCity(), z.getLocalNameOfCity(), z.getProvince())).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> tagifyZonesToString() {
+        return zoneRepository.findAll().stream().map(z -> new ResponseZoneDto(z.getCity(), z.getLocalNameOfCity(), z.getProvince()).toString()).toList();
     }
 }

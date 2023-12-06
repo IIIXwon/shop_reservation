@@ -20,6 +20,12 @@ import java.util.Set;
         @NamedAttributeNode("zones"),
         @NamedAttributeNode("managers"),
         @NamedAttributeNode("members")})
+@NamedEntityGraph(name = "Study.tagAndManager", attributeNodes = {
+        @NamedAttributeNode("tags"),
+        @NamedAttributeNode("managers")})
+@NamedEntityGraph(name = "Study.zoneAndManager", attributeNodes = {
+        @NamedAttributeNode("zones"),
+        @NamedAttributeNode("managers")})
 @Getter
 @Entity
 @EqualsAndHashCode(of = "id")
@@ -114,5 +120,21 @@ public class Study {
 
     public String getImage() {
         return image == null ? "/images/default_banner.png" : image;
+    }
+
+    public void addTag(Tag tag) {
+        tags.add(tag);
+    }
+
+    public void removeTag(Tag tag) {
+        tags.remove(tag);
+    }
+
+    public void addZone(Zone zone) {
+        zones.add(zone);
+    }
+
+    public void removeZone(Zone zone) {
+        zones.remove(zone);
     }
 }

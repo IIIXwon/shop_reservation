@@ -170,9 +170,9 @@ public class SettingsController {
     @GetMapping(value = {"/zones"})
     public String zonePage(@CurrentUser Account account, Model model) throws JsonProcessingException {
         Set<Zone> zones = accountService.getZones(account);
-        List<ResponseZoneDto> zoneList = zones.stream().map(z -> new ResponseZoneDto(z.getCity(), z.getLocalNameOfCity(), z.getProvince())).toList();
+        List<ResponseZoneDto> zoneList = zoneService.tagifyZonesToResponseZoneDto(zones);
         model.addAttribute("zones", zoneList);
-        List<String> whitlist = zoneRepository.findAll().stream().map(z -> new ResponseZoneDto(z.getCity(), z.getLocalNameOfCity(), z.getProvince()).toString()).toList();
+        List<String> whitlist = zoneService.tagifyZonesToString();
         model.addAttribute("whitelist", objectMapper.writeValueAsString(whitlist));
         return "/settings/zones";
     }
