@@ -99,4 +99,20 @@ public class Study {
         this.shortDescription = studyDescriptionRequestDto.shortDescription();
         this.fullDescription = studyDescriptionRequestDto.fullDescription();
     }
+
+    public void enableBanner() {
+        useBanner = true;
+    }
+
+    public void disableBanner() {
+        useBanner = false;
+    }
+
+    public void bannerImage(String image) {
+        this.image = image;
+    }
+
+    public String getImage() {
+        return image == null ? "/images/default_banner.png" : image;
+    }
 }

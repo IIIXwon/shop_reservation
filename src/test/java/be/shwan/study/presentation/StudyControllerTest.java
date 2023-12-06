@@ -18,8 +18,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -173,6 +172,52 @@ class StudyControllerTest {
         Study byPath = studyRepository.findByPath(path);
         assertEquals(shortDescription, byPath.getShortDescription());
         assertEquals(fullDescription, byPath.getFullDescription());
+    }
 
+    @WithAccount(USER_NAME)
+    @DisplayName("[GET] /study/{path}/settings/banner, 스터디 수정 페이지 banner")
+    @Test
+    void testStudySettingsPageBanner() throws Exception {
+        String path = "testPath";
+        mockMvc.perform(get("/study/{path}/settings/banner", path))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("study"))
+                .andExpect(view().name("study/settings/banner"))
+                .andExpect(authenticated().withUsername(USER_NAME))
+        ;
+    }
+
+    @WithAccount(USER_NAME)
+    @DisplayName("[POST] /study/{path}/settings/banner/enable, 스터디 수정 banner enable")
+    @Test
+    void testUpdateStudyEnableBanner() throws Exception {
+        String path = "testPath";
+        mockMvc.perform(post("/study/{path}/settings/banner/enable", path)
+                        .with(csrf())
+                )
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/study/" + path + "/settings/banner"))
+                .andExpect(authenticated().withUsername(USER_NAME))
+        ;
+
+        Study byPath = studyRepository.findByPath(path);
+        assertTrue(byPath.isUseBanner());
+    }
+
+    @WithAccount(USER_NAME)
+    @DisplayName("[POST] /study/{path}/settings/banner/disable, 스터디 수정 banner disable")
+    @Test
+    void testUpdateStudyDisableBanner() throws Exception {
+        String path = "testPath";
+        mockMvc.perform(post("/study/{path}/settings/banner/disable", path)
+                        .with(csrf())
+                )
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/study/" + path + "/settings/banner"))
+                .andExpect(authenticated().withUsername(USER_NAME))
+        ;
+
+        Study byPath = studyRepository.findByPath(path);
+        assertFalse(byPath.isUseBanner());
     }
 }

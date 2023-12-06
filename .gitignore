@@ -47,4 +47,4 @@ out/
 src/main/resources/static/node_modules
 
 ### img ###
-src/main/resources/static/images
+src/main/resources/static/images/copyright

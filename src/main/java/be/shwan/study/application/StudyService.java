@@ -14,4 +14,10 @@ public interface StudyService {
     Study getStudy(String path);
 
     Study getStudyToUpdate(String path, Account account);
+
+    void enableBanner(Study study);
+
+    void disableBanner(Study study);
+
+    void updateBannerImage(Study study, String image);
 }

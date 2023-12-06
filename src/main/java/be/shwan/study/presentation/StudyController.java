@@ -35,7 +35,6 @@ public class StudyController {
     private final String STUDY_FORM_VIEW = "study/form";
 
     private final StudyRequestDtoValidator studyRequestDtoValidator;
-    private final String STUDY_DESCRIPTION_SETTING_VIEW = "study/settings/description";
 
     @InitBinder("studyRequestDto")
     public void initBinder(WebDataBinder webDataBinder) {
@@ -54,7 +53,7 @@ public class StudyController {
             return STUDY_FORM_VIEW;
         }
         Study study = studyService.newStudy(account, studyRequestDto);
-        return "redirect:/study/" + encodePath(study);
+        return "redirect:/study/" + URLEncoder.encode(study.getPath(), StandardCharsets.UTF_8);
     }
 
 
@@ -72,30 +71,5 @@ public class StudyController {
         Study byPath = studyService.getStudy(path);
         model.addAttribute(byPath);
         return "study/members";
-    }
-
-    @GetMapping(value = {"/study/{path}/settings/description"})
-    public String studyDescriptionFormPage(@CurrentUser Account account, @PathVariable String path, Model model) {
-        Study byPath = studyService.getStudyToUpdate(path, account);
-        model.addAttribute(byPath);
-        model.addAttribute(new StudyDescriptionRequestDto(byPath.getShortDescription(), byPath.getFullDescription()));
-        return STUDY_DESCRIPTION_SETTING_VIEW;
-    }
-
-    @PostMapping(value = {"/study/{path}/settings/description"})
-    public String updateStudyDescription(@CurrentUser Account account, @PathVariable String path, Model model,
-                                         @Valid StudyDescriptionRequestDto studyDescriptionRequestDto, Errors errors,
-                                         RedirectAttributes redirectAttributes) {
-        if (errors.hasErrors()) {
-            return STUDY_DESCRIPTION_SETTING_VIEW;
-        }
-        Study byPath = studyService.getStudyToUpdate(path, account);
-        studyService.updateDescription(byPath, studyDescriptionRequestDto);
-        redirectAttributes.addFlashAttribute("message", "스터디 소개를 수정했습니다.");
-        return "redirect:/study/" + encodePath(byPath) + "/settings/description";
-    }
-
-    private String encodePath(Study study) {
-        return URLEncoder.encode(study.getPath(), StandardCharsets.UTF_8);
     }
 }

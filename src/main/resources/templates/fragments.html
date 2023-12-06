@@ -44,7 +44,7 @@
 
 <nav th:fragment="main-nav" class="navbar navbar-expand-sm navbar-dark bg-dark">
   <a class="navbar-brand" href="/" th:href="@{/}">
-    <img src="/images/logo_sm.png" width="30" height="30">
+    <img src="/images/copyright/logo_sm.png" width="30" height="30">
   </a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
@@ -113,7 +113,7 @@
 
 <footer th:fragment="footer">
   <div class="row justify-content-center">
-    <img class="mb-2" src="/images/logo_long_kr.jpg" alt="" width="100">
+    <img class="mb-2" src="/images/copyright/logo_long_kr.jpg" alt="" width="100">
     <small class="d-block mb-3 text-muted">&copy; 2020</small>
   </div>
 </footer>
@@ -264,7 +264,7 @@
     <a class="list-group-item list-group-item-action" th:classappend="${currentMenu == 'description'}? active"
        href="#" th:href="@{'/study/' + ${study.path} + '/settings/description'}">소개</a>
     <a class="list-group-item list-group-item-action" th:classappend="${currentMenu == 'image'}? active"
-       href="#" th:href="@{'/study/' + ${study.path} + '/settings/image'}">배너 이미지</a>
+       href="#" th:href="@{'/study/' + ${study.path} + '/settings/banner'}">배너 이미지</a>
     <a class="list-group-item list-group-item-action" th:classappend="${currentMenu == 'tags'}? active"
        href="#" th:href="@{'/study/' + ${study.path} + '/settings/tags'}">스터디 주제</a>
     <a class="list-group-item list-group-item-action" th:classappend="${currentMenu == 'zones'}? active"

@@ -51,6 +51,21 @@ public class SimpleStudyServiceImpl implements StudyService {
     }
 
     @Override
+    public void enableBanner(Study study) {
+        study.enableBanner();
+    }
+
+    @Override
+    public void disableBanner(Study study) {
+        study.disableBanner();
+    }
+
+    @Override
+    public void updateBannerImage(Study study, String image) {
+        study.bannerImage(image);
+    }
+
+    @Override
     public void updateDescription(Study study, StudyDescriptionRequestDto studyDescriptionRequestDto) {
         study.updateDescription(studyDescriptionRequestDto);
     }
