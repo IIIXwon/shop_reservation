@@ -7,7 +7,9 @@ import be.shwan.study.application.StudyService;
 import be.shwan.study.domain.Study;
 import be.shwan.study.domain.StudyRepository;
 import be.shwan.study.dto.StudyDescriptionRequestDto;
+import be.shwan.study.dto.StudyPathRequestDto;
 import be.shwan.study.dto.StudyRequestDto;
+import be.shwan.study.dto.StudyTitleRequestDto;
 import be.shwan.tag.application.TagService;
 import be.shwan.tag.domain.Tag;
 import be.shwan.tag.dto.RequestTagDto;
@@ -21,6 +23,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -56,7 +59,7 @@ public class SimpleStudyServiceImpl implements StudyService {
 
     @Override
     public Study getStudyToUpdateTag(String path, Account account) {
-        Study study = studyRepository.findAccountWithTagByPath(path);
+        Study study = studyRepository.findStudyWithTagByPath(path);
         existStudy(study);
         checkManager(account, study);
         return study;
@@ -64,10 +67,68 @@ public class SimpleStudyServiceImpl implements StudyService {
 
     @Override
     public Study getStudyToUpdateZone(String path, Account account) {
-        Study study = studyRepository.findAccountWithZoneByPath(path);
+        Study study = studyRepository.findStudyWithZoneByPath(path);
         existStudy(study);
         checkManager(account, study);
         return study;
+    }
+
+    @Override
+    public Study getSimpleStudy(String path, Account account) {
+        Study study = studyRepository.findStudyWithManagerByPath(path);
+        existStudy(study);
+        checkManager(account, study);
+        return study;
+    }
+
+    @Override
+    public void publish(Study study) {
+        if (study.isPublished()) {
+            throw new IllegalStateException("이미 공개중인 스터디 입니다");
+        }
+        study.publish();
+    }
+
+    @Override
+    public void closed(Study study) {
+        if (study.isClosed()) {
+            throw new IllegalStateException("이미 종료된 스터디 입니다");
+        }
+        study.close();
+    }
+
+    @Override
+    public void startRecruit(Study study) {
+        if (study.isRecruiting()) {
+            throw new IllegalStateException("이미 팀원 모집 중입니다.");
+        }
+
+        if (study.getRecruitingUpdateDateTime() != null && !LocalDateTime.now().isAfter(study.getRecruitingUpdateDateTime().plusHours(1L))) {
+            throw new IllegalStateException("팀원 모집은 1시간에 한번 변경할 수 있습니다.");
+        }
+        study.startRecruit();
+    }
+
+    @Override
+    public void stopRecruit(Study study) {
+        if (!study.isRecruiting()) {
+            throw new IllegalStateException("팀원 모집이 종료되었습니다.");
+        }
+
+        if (study.getRecruitingUpdateDateTime() != null && !LocalDateTime.now().isAfter(study.getRecruitingUpdateDateTime().plusHours(1L))) {
+            throw new IllegalStateException("팀원 모집은 1시간에 한번 변경할 수 있습니다.");
+        }
+        study.stopRecruit();
+    }
+
+    @Override
+    public void updateStudyPath(Study study, StudyPathRequestDto studyPathRequestDto) {
+        study.updatePath(studyPathRequestDto.newPath());
+    }
+
+    @Override
+    public void updateStudyTitle(Study study, StudyTitleRequestDto studyTitleRequestDto) {
+        study.updateTitle(studyTitleRequestDto.newTitle());
     }
 
     @Override

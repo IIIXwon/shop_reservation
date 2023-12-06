@@ -26,6 +26,8 @@ import java.util.Set;
 @NamedEntityGraph(name = "Study.zoneAndManager", attributeNodes = {
         @NamedAttributeNode("zones"),
         @NamedAttributeNode("managers")})
+@NamedEntityGraph(name = "Study.manager", attributeNodes = {
+        @NamedAttributeNode("managers")})
 @Getter
 @Entity
 @EqualsAndHashCode(of = "id")
@@ -136,5 +138,33 @@ public class Study {
 
     public void removeZone(Zone zone) {
         zones.remove(zone);
+    }
+
+    public void publish() {
+        published = true;
+        publishedDateTime = LocalDateTime.now();
+    }
+
+    public void close() {
+        closed = true;
+        closedDateTime = LocalDateTime.now();
+    }
+
+    public void startRecruit() {
+        recruiting = true;
+        recruitingUpdateDateTime = LocalDateTime.now();
+    }
+
+    public void stopRecruit() {
+        recruiting = false;
+        recruitingUpdateDateTime = LocalDateTime.now();
+    }
+
+    public void updatePath(String path) {
+        this.path = path;
+    }
+
+    public void updateTitle(String title) {
+        this.title = title;
     }
 }

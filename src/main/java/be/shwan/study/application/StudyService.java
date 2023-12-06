@@ -3,7 +3,9 @@ package be.shwan.study.application;
 import be.shwan.account.domain.Account;
 import be.shwan.study.domain.Study;
 import be.shwan.study.dto.StudyDescriptionRequestDto;
+import be.shwan.study.dto.StudyPathRequestDto;
 import be.shwan.study.dto.StudyRequestDto;
+import be.shwan.study.dto.StudyTitleRequestDto;
 import be.shwan.tag.dto.RequestTagDto;
 import be.shwan.zone.dto.RequestZoneDto;
 import org.springframework.security.core.Authentication;
@@ -34,4 +36,18 @@ public interface StudyService {
     Study getStudyToUpdateTag(String path, Account account);
 
     Study getStudyToUpdateZone(String path, Account account);
+
+    Study getSimpleStudy(String path, Account account);
+
+    void publish(Study study);
+
+    void closed(Study study);
+
+    void startRecruit(Study study);
+
+    void stopRecruit(Study study);
+
+    void updateStudyPath(Study study, StudyPathRequestDto studyPathRequestDto);
+
+    void updateStudyTitle(Study study, StudyTitleRequestDto studyTitleRequestDto);
 }

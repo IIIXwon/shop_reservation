@@ -6,7 +6,9 @@ import be.shwan.account.domain.CurrentUser;
 import be.shwan.study.application.StudyService;
 import be.shwan.study.domain.Study;
 import be.shwan.study.dto.StudyDescriptionRequestDto;
-import be.shwan.tag.application.TagService;
+import be.shwan.study.dto.StudyPathRequestDto;
+import be.shwan.study.dto.StudyPathRequestDtoValidator;
+import be.shwan.study.dto.StudyTitleRequestDto;
 import be.shwan.tag.domain.Tag;
 import be.shwan.tag.domain.TagRepository;
 import be.shwan.tag.dto.RequestTagDto;
@@ -22,13 +24,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -37,14 +39,19 @@ import java.util.stream.Collectors;
 @RequestMapping("/study/{path}/settings")
 public class StudySettingsController {
 
-    private final AccountService accountService;
     private final StudyService studyService;
     private final ZoneService zoneService;
     private final TagRepository tagRepository;
 
     private final ObjectMapper objectMapper;
+    private final StudyPathRequestDtoValidator studyPathRequestDtoValidator;
     private final String STUDY_DESCRIPTION_SETTING_VIEW = "study/settings/description";
+    private final String STUDY_SETTINGS_VIEW = "study/settings/study";
 
+    @InitBinder("studyPathRequestDto")
+    public void initBinder(WebDataBinder webDataBinder) {
+        webDataBinder.addValidators(studyPathRequestDtoValidator);
+    }
     @GetMapping(value = {"/description"})
     public String studyDescriptionFormPage(@CurrentUser Account account, @PathVariable String path, Model model) {
         Study byPath = studyService.getStudyToUpdate(path, account);
@@ -173,6 +180,70 @@ public class StudySettingsController {
         }
         studyService.removeZone(study, zoneDto);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping(value = {"/study"})
+    public String studyFormPage(@CurrentUser Account account, @PathVariable String path, Model model) {
+        Study study = studyService.getSimpleStudy(path, account);
+        model.addAttribute(study);
+        model.addAttribute(account);
+        return STUDY_SETTINGS_VIEW;
+    }
+
+    @PostMapping(value = {"/study/publish"})
+    public String studyPublish(@CurrentUser Account account, @PathVariable String path, RedirectAttributes redirectAttributes) {
+        Study study = studyService.getSimpleStudy(path, account);
+        studyService.publish(study);
+        redirectAttributes.addFlashAttribute("message", "스터디가 공개 되었습니다.");
+        return "redirect:/study/" + encodePath(path) + "/settings/study";
+    }
+
+    @PostMapping(value = {"/study/close"})
+    public String studyClose(@CurrentUser Account account, @PathVariable String path, RedirectAttributes redirectAttributes) {
+        Study study = studyService.getSimpleStudy(path, account);
+        studyService.closed(study);
+        redirectAttributes.addFlashAttribute("message", "스터디가 종료 되었습니다.");
+        return "redirect:/study/" + encodePath(path) + "/settings/study";
+    }
+
+    @PostMapping(value = {"/recruit/start"})
+    public String startRecruiting(@CurrentUser Account account, @PathVariable String path, RedirectAttributes redirectAttributes) {
+        Study study = studyService.getSimpleStudy(path, account);
+        studyService.startRecruit(study);
+        redirectAttributes.addFlashAttribute("message", "스터디 팀원 모집을 시작합니다.");
+        return "redirect:/study/" + encodePath(path) + "/settings/study";
+    }
+
+    @PostMapping(value = {"/recruit/stop"})
+    public String stopRecruiting(@CurrentUser Account account, @PathVariable String path, RedirectAttributes redirectAttributes) {
+        Study study = studyService.getSimpleStudy(path, account);
+        studyService.stopRecruit(study);
+        redirectAttributes.addFlashAttribute("message", "스터디 팀원 모집을 종료합니다.");
+        return "redirect:/study/" + encodePath(path) + "/settings/study";
+    }
+
+    @PostMapping(value = {"/study/path"})
+    public String updateStudyPath(@CurrentUser Account account, @PathVariable String path, @Valid StudyPathRequestDto studyPathRequestDto,
+                                  Errors errors, RedirectAttributes redirectAttributes) {
+        if (errors.hasErrors()) {
+            return STUDY_SETTINGS_VIEW;
+        }
+        Study study = studyService.getSimpleStudy(path, account);
+        studyService.updateStudyPath(study, studyPathRequestDto);
+        redirectAttributes.addFlashAttribute("message", "스터디 경로를 변경했습니다.");
+        return "redirect:/study/" + encodePath(study.getPath()) + "/settings/study";
+    }
+
+    @PostMapping(value = {"/study/title"})
+    public String updateStudyTitle(@CurrentUser Account account, @PathVariable String path, @Valid StudyTitleRequestDto studyTitleRequestDto,
+                                   Errors errors, RedirectAttributes redirectAttributes) {
+        if (errors.hasErrors()) {
+            return STUDY_SETTINGS_VIEW;
+        }
+        Study study = studyService.getSimpleStudy(path, account);
+        studyService.updateStudyTitle(study, studyTitleRequestDto);
+        redirectAttributes.addFlashAttribute("message", "스터디 제목을 변경했습니다.");
+        return "redirect:/study/" + encodePath(path) + "/settings/study";
     }
 
     private String encodePath(String path) {
