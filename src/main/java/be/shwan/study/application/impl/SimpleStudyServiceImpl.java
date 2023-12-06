@@ -23,6 +23,7 @@ public class SimpleStudyServiceImpl implements StudyService {
     public Study newStudy(Account account, StudyRequestDto studyRequestDto) {
         Study study = new Study(studyRequestDto.path(), studyRequestDto.title(), studyRequestDto.shortDescription(),
                 studyRequestDto.fullDescription());
+        study.addManager(account);
         return studyRepository.save(study);
     }
 }

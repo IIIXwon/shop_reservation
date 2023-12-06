@@ -53,13 +53,23 @@ public class StudyController {
     }
 
     @GetMapping(value = {"/study/{path}"})
-    public String studyViewPage(@PathVariable String path, @CurrentUser Account account, Model model) {
+    public String studyViewPage(@CurrentUser Account account, @PathVariable String path, Model model) {
         Study byPath = studyRepository.findByPath(path);
-        if (byPath == null ) {
+        if (byPath == null) {
             throw new IllegalArgumentException("잘못된 접근입니다");
         }
         model.addAttribute(byPath);
         model.addAttribute(account);
         return "study/view";
+    }
+
+    @GetMapping(value = {"/study/{path}/members"})
+    public String studyMemberPage(@CurrentUser Account account, @PathVariable String path, Model model) {
+        Study byPath = studyRepository.findByPath(path);
+        if (byPath == null) {
+            throw new IllegalArgumentException("잘못된 접근입니다");
+        }
+        model.addAttribute(byPath);
+        return "study/members";
     }
 }

@@ -122,4 +122,24 @@ class StudyControllerTest {
                 .andExpect(authenticated().withUsername(USER_NAME))
         ;
     }
+
+    @WithAccount(USER_NAME)
+    @DisplayName("[GET] /study/{path}/members, 스터디 참가자 페이지")
+    @Test
+    void testStudyMemberPage() throws Exception {
+        String path = "testPath";
+        String testTitle = "testTitle";
+        String testShotDescription = "testShotDescription";
+        String testFullDescription = "testFullDescription";
+        Account byNickname = accountRepository.findByNickname(USER_NAME);
+        StudyRequestDto studyRequestDto = new StudyRequestDto(path, testTitle, testShotDescription, testFullDescription);
+        Study study = studyService.newStudy(byNickname, studyRequestDto);
+
+        mockMvc.perform(get("/study/{path}/members", path))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("study"))
+                .andExpect(view().name("study/members"))
+                .andExpect(authenticated().withUsername(USER_NAME))
+        ;
+    }
 }
