@@ -24,6 +24,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
@@ -62,18 +64,40 @@ public class EventController {
             return EVENT_FORM_VIEW;
         }
         Event event = eventService.createEvent(account, study, eventRequestDto);
-        return "redirect:/study/" + study.getEncodePath() + "/event/" + event.getId();
+        return "redirect:/study/" + study.getEncodePath() + "/events/" + event.getId();
     }
 
-    @GetMapping(value = {"/study/{path}/event/{id}"})
-    private String eventViewPage(@CurrentUser Account account, @PathVariable String path, @PathVariable Long id,
+    @GetMapping(value = {"/study/{path}/events/{id}"})
+    public String eventViewPage(@CurrentUser Account account, @PathVariable String path, @PathVariable Long id,
                                  Model model) {
         Study study = studyService.getStudyWithMembersAndManagers(path);
         Event event = eventRepository.findById(id).orElseThrow();
         model.addAttribute(account);
         model.addAttribute(study);
         model.addAttribute(event);
-        return "/events/view";
+        return "events/view";
+    }
+
+    @GetMapping(value = {"/study/{path}/events"})
+    String eventViewList(@CurrentUser Account account, @PathVariable String path, Model model) {
+        Study study = studyService.getStudy(path);
+
+        List<Event> events = eventService.getEventByStudy(study);
+        List<Event> newEvents = new ArrayList<>();
+        List<Event> oldEvents = new ArrayList<>();
+        for(Event event : events) {
+            if (event.isEndEvent()) {
+                oldEvents.add(event);
+            } else {
+                newEvents.add(event);
+            }
+        }
+
+        model.addAttribute(account);
+        model.addAttribute(study);
+        model.addAttribute("newEvents", newEvents);
+        model.addAttribute("oldEvents", oldEvents);
+        return "study/events";
     }
 
 

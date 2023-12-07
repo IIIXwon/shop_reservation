@@ -4,7 +4,11 @@ import be.shwan.WithAccount;
 import be.shwan.account.application.AccountService;
 import be.shwan.account.domain.Account;
 import be.shwan.account.domain.AccountRepository;
+import be.shwan.event.application.EventService;
+import be.shwan.event.domain.Event;
+import be.shwan.event.domain.EventRepository;
 import be.shwan.event.domain.EventType;
+import be.shwan.event.dto.EventRequestDto;
 import be.shwan.study.application.StudyService;
 import be.shwan.study.domain.Study;
 import be.shwan.study.domain.StudyRepository;
@@ -19,6 +23,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -46,6 +52,12 @@ class EventControllerTest {
     @Autowired
     StudyRepository studyRepository;
 
+    @Autowired
+    EventService eventService;
+
+    @Autowired
+    EventRepository eventRepository;
+
     @BeforeEach
     void init() {
         String path = "testPath";
@@ -54,7 +66,13 @@ class EventControllerTest {
         String testFullDescription = "testFullDescription";
         Account byNickname = accountRepository.findByNickname(TEST_USER);
         StudyRequestDto studyRequestDto = new StudyRequestDto(path, testTitle, testShotDescription, testFullDescription);
-        studyService.newStudy(byNickname, studyRequestDto);
+        Study study = studyService.newStudy(byNickname, studyRequestDto);
+        studyService.publish(study);
+        EventRequestDto requestDto = new EventRequestDto("test", EventType.CONFIRMATIVE, 2,
+                "2023-12-07T12:44:00", "2023-12-08T12:44:00", "2023-12-31T12:44:00", "");
+        eventService.createEvent(byNickname, study, requestDto);
+
+
     }
 
     @AfterEach
@@ -95,6 +113,34 @@ class EventControllerTest {
                 )
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/study/" + path))
+                .andExpect(authenticated().withUsername(TEST_USER))
+        ;
+    }
+
+    @WithAccount(TEST_USER)
+    @DisplayName("[GET] /study/{path}/events/{id}, 모임 상세 페이지")
+    @Test
+    void testEventViewPage() throws Exception {
+        String path = "testPath";
+        mockMvc.perform(get("/study/{path}/events/{id}", path, 1)
+                )
+                .andExpect(status().isOk())
+                .andExpect(view().name("events/view"))
+                .andExpect(model().attributeExists("account", "study", "event"))
+                .andExpect(authenticated().withUsername(TEST_USER))
+        ;
+    }
+
+    @WithAccount(TEST_USER)
+    @DisplayName("[GET] /study/{path}/events, 모임 목록 페이지")
+    @Test
+    void testEventLIstPage() throws Exception {
+        String path = "testPath";
+        mockMvc.perform(get("/study/{path}/events", path)
+                )
+                .andExpect(status().isOk())
+                .andExpect(view().name("study/events"))
+                .andExpect(model().attributeExists("account", "newEvents", "oldEvents"))
                 .andExpect(authenticated().withUsername(TEST_USER))
         ;
     }

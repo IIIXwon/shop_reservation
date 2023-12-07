@@ -11,6 +11,9 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -29,5 +32,11 @@ public class SimpleEventServiceImpl implements EventService {
 
         Event event = new Event(account, study, eventRequestDto);
         return eventRepository.save(event);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<Event> getEventByStudy(Study study) {
+        return eventRepository.findAllWithEnrollmentsByStudy(study);
     }
 }
