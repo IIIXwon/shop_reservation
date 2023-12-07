@@ -2,6 +2,7 @@ package be.shwan.event.domain;
 
 import be.shwan.account.domain.Account;
 import be.shwan.enrollment.domain.Enrollment;
+import be.shwan.event.dto.EventRequestDto;
 import be.shwan.study.domain.Study;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
@@ -52,4 +53,16 @@ public class Event {
     @Enumerated(EnumType.STRING)
     private EventType eventType;
 
+    public Event(Account account, Study study, EventRequestDto eventRequestDto) {
+        this.createBy = account;
+        this.study = study;
+        title = eventRequestDto.title();
+        description = eventRequestDto.description();
+        limitOfEnrollment = eventRequestDto.limitOfEnrollments();
+        createDateTime = LocalDateTime.now();
+        eventType = eventRequestDto.eventType();
+        endEnrollmentDateTime = LocalDateTime.parse(eventRequestDto.endEnrollmentDateTime());
+        startDateTime = LocalDateTime.parse(eventRequestDto.startDateTime());
+        endDateTime = LocalDateTime.parse(eventRequestDto.endDateTime());
+    }
 }

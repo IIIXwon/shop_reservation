@@ -11,6 +11,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.userdetails.User;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -181,5 +183,9 @@ public class Study {
 
     public void leave(Account account) {
         members.remove(account);
+    }
+
+    public String getPath() {
+        return URLEncoder.encode(path, StandardCharsets.UTF_8);
     }
 }

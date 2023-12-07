@@ -3,6 +3,7 @@ package be.shwan.study.application.impl;
 import be.shwan.account.domain.Account;
 import be.shwan.account.domain.AccountRepository;
 import be.shwan.account.domain.UserAccount;
+import be.shwan.event.dto.EventRequestDto;
 import be.shwan.study.application.StudyService;
 import be.shwan.study.domain.Study;
 import be.shwan.study.domain.StudyRepository;
@@ -43,6 +44,7 @@ public class SimpleStudyServiceImpl implements StudyService {
         return studyRepository.save(study);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Study getStudy(String path) {
         Study study = studyRepository.findByPath(path);
@@ -57,6 +59,7 @@ public class SimpleStudyServiceImpl implements StudyService {
         return study;
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Study getStudyToUpdateTag(String path, Account account) {
         Study study = studyRepository.findStudyWithTagByPath(path);
@@ -65,6 +68,7 @@ public class SimpleStudyServiceImpl implements StudyService {
         return study;
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Study getStudyToUpdateZone(String path, Account account) {
         Study study = studyRepository.findStudyWithZoneByPath(path);
@@ -73,6 +77,7 @@ public class SimpleStudyServiceImpl implements StudyService {
         return study;
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Study getSimpleStudy(String path, Account account) {
         Study study = studyRepository.findStudyWithManagerByPath(path);
@@ -140,6 +145,7 @@ public class SimpleStudyServiceImpl implements StudyService {
         studyRepository.delete(study);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Study getStudyWithMembersAndManagers(String path) {
         Study study = studyRepository.findStudyWithMembersAndManagersByPath(path);

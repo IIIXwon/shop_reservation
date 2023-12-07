@@ -1,6 +1,7 @@
 package be.shwan.study.application;
 
 import be.shwan.account.domain.Account;
+import be.shwan.event.dto.EventRequestDto;
 import be.shwan.study.domain.Study;
 import be.shwan.study.dto.StudyDescriptionRequestDto;
 import be.shwan.study.dto.StudyPathRequestDto;
