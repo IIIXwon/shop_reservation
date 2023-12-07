@@ -185,7 +185,7 @@ public class Study {
         members.remove(account);
     }
 
-    public String getPath() {
+    public String getEncodePath() {
         return URLEncoder.encode(path, StandardCharsets.UTF_8);
     }
 }

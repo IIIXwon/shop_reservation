@@ -3,6 +3,8 @@ package be.shwan.event.presentation;
 import be.shwan.account.domain.Account;
 import be.shwan.account.domain.CurrentUser;
 import be.shwan.event.application.EventService;
+import be.shwan.event.domain.Event;
+import be.shwan.event.domain.EventRepository;
 import be.shwan.event.domain.EventType;
 import be.shwan.event.dto.EventRequestDto;
 import be.shwan.event.dto.EventRequestDtoValidator;
@@ -27,7 +29,9 @@ import java.time.format.DateTimeFormatter;
 @RequiredArgsConstructor
 public class EventController {
     private final EventService eventService;
+    private final EventRepository eventRepository;
     private final StudyService studyService;
+
 
     private final EventRequestDtoValidator eventRequestDtoValidator;
 
@@ -57,8 +61,19 @@ public class EventController {
             model.addAttribute(study);
             return EVENT_FORM_VIEW;
         }
-        eventService.createEvent(account, study, eventRequestDto);
-        return "redirect:/study/" + study.getPath();
+        Event event = eventService.createEvent(account, study, eventRequestDto);
+        return "redirect:/study/" + study.getEncodePath() + "/event/" + event.getId();
+    }
+
+    @GetMapping(value = {"/study/{path}/event/{id}"})
+    private String eventViewPage(@CurrentUser Account account, @PathVariable String path, @PathVariable Long id,
+                                 Model model) {
+        Study study = studyService.getStudyWithMembersAndManagers(path);
+        Event event = eventRepository.findById(id).orElseThrow();
+        model.addAttribute(account);
+        model.addAttribute(study);
+        model.addAttribute(event);
+        return "/events/view";
     }
 
 

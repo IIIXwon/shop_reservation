@@ -18,7 +18,7 @@ public class SimpleEventServiceImpl implements EventService {
     private final EventRepository eventRepository;
 
     @Override
-    public void createEvent(Account account, Study study, EventRequestDto eventRequestDto) {
+    public Event createEvent(Account account, Study study, EventRequestDto eventRequestDto) {
         if(study.isClosed() || !study.isPublished()) {
             throw new AccessDeniedException("모임을 생성 할 수 없습니다.");
         }
@@ -28,6 +28,6 @@ public class SimpleEventServiceImpl implements EventService {
         }
 
         Event event = new Event(account, study, eventRequestDto);
-        eventRepository.save(event);
+        return eventRepository.save(event);
     }
 }
