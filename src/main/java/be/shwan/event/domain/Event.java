@@ -46,6 +46,7 @@ public class Event {
 
     private int limitOfEnrollment;
 
+    @OneToMany(mappedBy = "event")
     private List<Enrollment> enrollments;
 
     @Enumerated(EnumType.STRING)
