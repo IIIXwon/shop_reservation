@@ -467,4 +467,56 @@ class StudyControllerTest {
         Study study = studyRepository.findStudyWithManagerByPath(path);
         assertEquals(newTitle, study.getTitle());
     }
+
+    @WithAccount(USER_NAME)
+    @DisplayName("[POST] /study/{path}/settings/study/remove, 스터디 제목 변경")
+    @Test
+    void testRemoveStudy() throws Exception {
+        String path = "testPath";
+        mockMvc.perform(post("/study/{path}/settings/study/remove", path)
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/"))
+                .andExpect(authenticated().withUsername(USER_NAME))
+        ;
+
+        Study study = studyRepository.findStudyWithManagerByPath(path);
+        assertNull(study);
+    }
+
+    @WithAccount({USER_NAME, "joinUser"})
+    @DisplayName("[POST] /study/{path}/join, 스터디 참가")
+    @Test
+    void testJoinStudy() throws Exception {
+        String path = "testPath";
+        mockMvc.perform(post("/study/{path}/join", path)
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/study/" + path))
+                .andExpect(authenticated().withUsername("joinUser"))
+        ;
+
+        Study study = studyRepository.findStudyWithMembersAndManagersByPath(path);
+        assertEquals(1, study.getManagers().size());
+        assertEquals(1, study.getMembers().size());
+    }
+
+    @WithAccount({USER_NAME, "joinUser"})
+    @DisplayName("[POST] /study/{path}/leave, 스터디 탈퇴")
+    @Test
+    void testLeaveStudy() throws Exception {
+        String path = "testPath";
+        Study study = studyRepository.findStudyWithMembersAndManagersByPath(path);
+        Account byNickname = accountRepository.findByNickname("joinUser");
+        study.join(byNickname);
+
+        mockMvc.perform(post("/study/{path}/leave", path)
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/study/" + path))
+                .andExpect(authenticated().withUsername("joinUser"))
+        ;
+        assertEquals(1, study.getManagers().size());
+        assertEquals(0, study.getMembers().size());
+    }
 }

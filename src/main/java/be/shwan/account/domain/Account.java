@@ -149,4 +149,8 @@ public class Account {
     public boolean isManagerOf(Study study) {
         return study.getManagers().contains(this);
     }
+
+    public boolean isMemberOf(Study study) {
+        return study.getMembers().contains(this);
+    }
 }

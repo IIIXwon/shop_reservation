@@ -72,4 +72,18 @@ public class StudyController {
         model.addAttribute(byPath);
         return "study/members";
     }
+
+    @PostMapping(value = {"/study/{path}/join"})
+    public String joinStudy(@CurrentUser Account account, @PathVariable String path) {
+        Study study = studyService.getStudyWithMembersAndManagers(path);
+        studyService.join(study, account);
+        return "redirect:/study/" + URLEncoder.encode(path, StandardCharsets.UTF_8);
+    }
+
+    @PostMapping(value = {"/study/{path}/leave"})
+    public String leaveStudy(@CurrentUser Account account, @PathVariable String path) {
+        Study study = studyService.getStudyWithMembersAndManagers(path);
+        studyService.leave(study, account);
+        return "redirect:/study/" + URLEncoder.encode(path, StandardCharsets.UTF_8);
+    }
 }

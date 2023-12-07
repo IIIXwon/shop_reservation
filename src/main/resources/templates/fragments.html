@@ -175,22 +175,22 @@
             class="d-inline-block ml-1" tabindex="0" data-toggle="tooltip" data-placement="bottom" title="팀원 모집중 아님">
                     <button class="btn btn-primary btn-sm" style="pointer-events: none;" type="button" disabled>OFF</button>
                 </span>
-      <span sec:authorize="isAuthenticated()" th:if="${study.isJoinable(#authentication.principal)}"
-            class="btn-group" role="group" aria-label="Basic example">
-                    <a class="btn btn-primary" th:href="@{'/study/' + ${study.path} + '/join'}">
-                        스터디 가입
-                    </a>
-                    <a class="btn btn-outline-primary" th:href="@{'/study/' + ${study.path} + '/members'}"
-                       th:text="${study.members.size()}">1</a>
+        <form sec:authorize="isAuthenticated()" th:if="${study.isJoinable(#authentication.principal)}"
+              class="btn btn-primary" th:action="@{'/study/' + ${study.path} + '/join'}" method="post" novalidate>
+            <span class="btn-group" role="group" aria-label="Basic example">
+                    <button class="btn btn-primary btn-block" type="submit"
+                        aria-describedby="submitHelp">스터디 가입</button>
+                    <a class="btn btn-outline-primary" th:text="${study.members.size()}">1</a>
                 </span>
-      <span sec:authorize="isAuthenticated()"
-            th:if="${!study.closed && study.isMember(#authentication.principal)}" class="btn-group" role="group">
-                    <a class="btn btn-outline-warning" th:href="@{'/study/' + ${study.path} + '/leave'}">
-                        스터디 탈퇴
-                    </a>
-                    <a class="btn btn-outline-primary" th:href="@{'/study/' + ${study.path} + '/members'}"
-                       th:text="${study.members.size()}">1</a>
+        </form>
+        <form sec:authorize="isAuthenticated()" th:if="${!study.closed && study.isMember(#authentication.principal)}"
+              class="btn btn-primary" th:action="@{'/study/' + ${study.path} + '/leave'}" method="post" novalidate>
+            <span class="btn-group" role="group" aria-label="Basic example">
+                    <button class="btn btn-primary btn-block" type="submit"
+                            aria-describedby="submitHelp">스터디 탈퇴</button>
+                    <a class="btn btn-outline-primary" th:text="${study.members.size()}">1</a>
                 </span>
+        </form>
       <span sec:authorize="isAuthenticated()"
             th:if="${study.published && !study.closed && study.isManager(#authentication.principal)}">
                     <a class="btn btn-outline-primary" th:href="@{'/study/' + ${study.path} + '/new-event'}">

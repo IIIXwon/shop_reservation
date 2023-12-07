@@ -28,6 +28,9 @@ import java.util.Set;
         @NamedAttributeNode("managers")})
 @NamedEntityGraph(name = "Study.manager", attributeNodes = {
         @NamedAttributeNode("managers")})
+@NamedEntityGraph(name = "Study.withMembersAndManagers", attributeNodes = {
+        @NamedAttributeNode("managers"),
+        @NamedAttributeNode("members")})
 @Getter
 @Entity
 @EqualsAndHashCode(of = "id")
@@ -166,5 +169,17 @@ public class Study {
 
     public void updateTitle(String title) {
         this.title = title;
+    }
+
+    public boolean removeAble() {
+        return !published;
+    }
+
+    public void join(Account account) {
+        members.add(account);
+    }
+
+    public void leave(Account account) {
+        members.remove(account);
     }
 }

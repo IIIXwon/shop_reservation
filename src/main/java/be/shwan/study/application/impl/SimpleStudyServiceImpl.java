@@ -132,6 +132,46 @@ public class SimpleStudyServiceImpl implements StudyService {
     }
 
     @Override
+    public void removeStudy(Study study) {
+        if (!study.removeAble()){
+            throw new IllegalStateException("스터디를 삭제 할 수 없습니다.");
+
+        }
+        studyRepository.delete(study);
+    }
+
+    @Override
+    public Study getStudyWithMembersAndManagers(String path) {
+        Study study = studyRepository.findStudyWithMembersAndManagersByPath(path);
+        existStudy(study);
+        return  study;
+    }
+
+    @Override
+    public void join(Study study, Account account) {
+        checkJoin(account, study);
+        study.join(account);
+    }
+
+    @Override
+    public void leave(Study study, Account account) {
+        checkLeave(study, account);
+    }
+
+    private void checkLeave(Study study, Account account) {
+        if (!account.isMemberOf(study) || account.isManagerOf(study)) {
+            throw new AccessDeniedException("스터디에서 탈퇴 할 수 없습니다.");
+        }
+        study.leave(account);
+    }
+
+    private void checkJoin(Account account, Study study) {
+        if (account.isMemberOf(study) || account.isManagerOf(study)) {
+            throw new AccessDeniedException("스터디에 참가 할 수 없습니다.");
+        }
+    }
+
+    @Override
     public void enableBanner(Study study) {
         study.enableBanner();
     }

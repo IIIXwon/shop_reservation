@@ -1,6 +1,5 @@
 package be.shwan.study.presentation;
 
-import be.shwan.account.application.AccountService;
 import be.shwan.account.domain.Account;
 import be.shwan.account.domain.CurrentUser;
 import be.shwan.study.application.StudyService;
@@ -244,6 +243,13 @@ public class StudySettingsController {
         studyService.updateStudyTitle(study, studyTitleRequestDto);
         redirectAttributes.addFlashAttribute("message", "스터디 제목을 변경했습니다.");
         return "redirect:/study/" + encodePath(path) + "/settings/study";
+    }
+
+    @PostMapping(value = {"/study/remove"})
+    public String removeStudy(@CurrentUser Account account, @PathVariable String path) {
+        Study study = studyService.getStudyWithMembersAndManagers(path);
+        studyService.removeStudy(study);
+        return "redirect:/";
     }
 
     private String encodePath(String path) {

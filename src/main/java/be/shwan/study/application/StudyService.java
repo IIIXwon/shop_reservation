@@ -8,7 +8,6 @@ import be.shwan.study.dto.StudyRequestDto;
 import be.shwan.study.dto.StudyTitleRequestDto;
 import be.shwan.tag.dto.RequestTagDto;
 import be.shwan.zone.dto.RequestZoneDto;
-import org.springframework.security.core.Authentication;
 
 public interface StudyService {
     Study newStudy(Account account, StudyRequestDto studyRequestDto);
@@ -50,4 +49,12 @@ public interface StudyService {
     void updateStudyPath(Study study, StudyPathRequestDto studyPathRequestDto);
 
     void updateStudyTitle(Study study, StudyTitleRequestDto studyTitleRequestDto);
+
+    void removeStudy(Study study);
+
+    Study getStudyWithMembersAndManagers(String path);
+
+    void join(Study study, Account account);
+
+    void leave(Study study, Account account);
 }

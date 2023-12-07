@@ -17,17 +17,20 @@ public class WithAccountSecurityContextFactory implements WithSecurityContextFac
 
     @Override
     public SecurityContext createSecurityContext(WithAccount withAccount) {
-        String nickname = withAccount.value();
-        SignUpFormDto signUpForm = new SignUpFormDto(nickname, nickname +"@email.com", "12345678");
-        try {
-            accountService.processNewAccount(signUpForm);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        UserDetails principal = accountService.loadUserByUsername(nickname);
-        Authentication authentication = new UsernamePasswordAuthenticationToken(principal, principal.getPassword(), principal.getAuthorities());
+        String[] nicknames = withAccount.value();
         SecurityContext context = SecurityContextHolder.createEmptyContext();
-        context.setAuthentication(authentication);
+        for(String nickname : nicknames) {
+            SignUpFormDto signUpForm = new SignUpFormDto(nickname, nickname +"@email.com", "12345678");
+            try {
+                accountService.processNewAccount(signUpForm);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
+            UserDetails principal = accountService.loadUserByUsername(nickname);
+            Authentication authentication = new UsernamePasswordAuthenticationToken(principal, principal.getPassword(), principal.getAuthorities());
+            context.setAuthentication(authentication);
+        }
         return context;
     }
 }
