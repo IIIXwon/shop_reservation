@@ -183,10 +183,11 @@
                     <a class="btn btn-outline-primary" th:text="${study.members.size()}">1</a>
                 </span>
         </form>
+
         <form sec:authorize="isAuthenticated()" th:if="${!study.closed && study.isMember(#authentication.principal)}"
-              class="btn btn-primary" th:action="@{'/study/' + ${study.path} + '/leave'}" method="post" novalidate>
+              class="btn btn-warning" th:action="@{'/study/' + ${study.path} + '/leave'}" method="post" novalidate>
             <span class="btn-group" role="group" aria-label="Basic example">
-                    <button class="btn btn-primary btn-block" type="submit"
+                    <button class="btn btn-outline-warning" type="submit"
                             aria-describedby="submitHelp">스터디 탈퇴</button>
                     <a class="btn btn-outline-primary" th:text="${study.members.size()}">1</a>
                 </span>
