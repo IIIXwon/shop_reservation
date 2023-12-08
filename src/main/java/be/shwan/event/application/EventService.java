@@ -11,4 +11,20 @@ public interface EventService {
     Event createEvent(Account account, Study study, EventRequestDto eventRequestDto);
 
     List<Event> getEventByStudy(Study study);
+
+    List<List<Event>> getEventList(List<Event> events);
+
+    void update(Account account, Study study, Event event, EventRequestDto eventRequestDto);
+
+    void deleteEvent(Event event, Account account);
+
+    Event getEventWithEnrollment(Long id);
+
+    void enrollEvent(Event event, Account account, Study study);
+
+    void leaveEvent(Event event, Account account, Study study);
+
+    void enrollEvent(Event event, Account account);
+
+    void leaveEvent(Event event, Account account);
 }

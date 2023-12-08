@@ -86,6 +86,14 @@ public class SimpleStudyServiceImpl implements StudyService {
         return study;
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public Study getStudyToEnroll(String path) {
+        Study study = studyRepository.findStudyOnlyByPath(path);
+        existStudy(study);
+        return study;
+    }
+
     @Override
     public void publish(Study study) {
         if (study.isPublished()) {

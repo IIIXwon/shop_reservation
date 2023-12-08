@@ -13,6 +13,9 @@ import java.util.List;
 public interface EventRepository extends JpaRepository<Event, Long> {
 
 
-    @EntityGraph(value = "Event.withEnrollments", type = EntityGraph.EntityGraphType.FETCH)
+    @EntityGraph(value = "EventAll.withEnrollments", type = EntityGraph.EntityGraphType.FETCH)
     List<Event> findAllWithEnrollmentsByStudy(Study study);
+
+    @EntityGraph(value = "Event.withEnrollments", type = EntityGraph.EntityGraphType.FETCH)
+    Event findEventWithEnrollmentById(Long id);
 }

@@ -16,10 +16,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
@@ -36,12 +33,13 @@ public class EventController {
 
 
     private final EventRequestDtoValidator eventRequestDtoValidator;
+    static final String EVENT_FORM_VIEW = "events/form";
+    static final String EVENT_UPDATE_FORM_VIEW = "events/update-form";
 
     @InitBinder("eventRequestDto")
     public void setEventRequestDtoValidator(WebDataBinder webDataBinder) {
         webDataBinder.addValidators(eventRequestDtoValidator);
     }
-    final String EVENT_FORM_VIEW = "events/form";
 
     @GetMapping(value = {"/study/{path}/new-event"})
     public String eventFormPage(@CurrentUser Account account, @PathVariable String path, Model model) {
@@ -83,21 +81,63 @@ public class EventController {
         Study study = studyService.getStudy(path);
 
         List<Event> events = eventService.getEventByStudy(study);
-        List<Event> newEvents = new ArrayList<>();
-        List<Event> oldEvents = new ArrayList<>();
-        for(Event event : events) {
-            if (event.isEndEvent()) {
-                oldEvents.add(event);
-            } else {
-                newEvents.add(event);
-            }
-        }
-
+        List<List<Event>> eventList = eventService.getEventList(events);
         model.addAttribute(account);
         model.addAttribute(study);
-        model.addAttribute("newEvents", newEvents);
-        model.addAttribute("oldEvents", oldEvents);
+        model.addAttribute("newEvents", eventList.get(0));
+        model.addAttribute("oldEvents", eventList.get(1));
         return "study/events";
+    }
+
+    @GetMapping(value = {"/study/{path}/events/{id}/edit"})
+    public String eventFormPage(@CurrentUser Account account, @PathVariable String path, @PathVariable Long id, Model model) {
+        DateTimeFormatter dateTimeFormatter = getDateTimeFormatter();
+        Study study = studyService.getStudyWithMembersAndManagers(path);
+        Event event = eventRepository.findById(id).orElseThrow();
+        model.addAttribute(new EventRequestDto(event.getTitle(), event.getEventType(), event.getLimitOfEnrollments(),
+                event.getEndEnrollmentDateTime().format(dateTimeFormatter), event.getStartDateTime().format(dateTimeFormatter),
+                event.getEndDateTime().format(dateTimeFormatter),  event.getDescription()));
+        model.addAttribute(study);
+        model.addAttribute(account);
+        model.addAttribute(event);
+        return EVENT_UPDATE_FORM_VIEW;
+
+    }
+
+    @PostMapping(value = {"/study/{path}/events/{id}/edit"})
+    public String updateEventForm(@CurrentUser Account account, @PathVariable String path, @PathVariable Long id,
+                                  @Valid EventRequestDto eventRequestDto, Errors errors, Model model) {
+        Study study = studyService.getStudyWithMembersAndManagers(path);
+        Event event = eventService.getEventWithEnrollment(id);
+        if (errors.hasErrors() || event.getLimitOfEnrollments() > eventRequestDto.limitOfEnrollments()) {
+            model.addAttribute(study);
+            model.addAttribute(account);
+            model.addAttribute(event);
+            return EVENT_UPDATE_FORM_VIEW;
+        }
+        eventService.update(account, study, event, eventRequestDto);
+        return "redirect:/study/" + path + "/events/" + id;
+    }
+
+    @DeleteMapping(value = {"/study/{path}/events/{id}"})
+    public String deleteEvent(@CurrentUser Account account, @PathVariable String path, @PathVariable Long id) {
+        Event event = eventRepository.findById(id).orElseThrow();
+        eventService.deleteEvent(event, account);
+        return "redirect:/study/" + path + "/events";
+    }
+
+    @PostMapping(value = {"/study/{path}/events/{id}/enroll"})
+    public String enrollEvent(@CurrentUser Account account, @PathVariable String path, @PathVariable Long id, Model model) {
+        Study study = studyService.getStudyToEnroll(path);
+        eventService.enrollEvent(eventRepository.findById(id).orElseThrow(), account);
+        return "redirect:/study/" + study.getEncodePath() + "/events/" + id;
+    }
+
+    @PostMapping(value = {"/study/{path}/events/{id}/leave"})
+    public String leaveEvent(@CurrentUser Account account, @PathVariable String path, @PathVariable Long id, Model model) {
+        Study study = studyService.getStudyToEnroll(path);
+        eventService.leaveEvent(eventRepository.findById(id).orElseThrow(), account);
+        return "redirect:/study/" + study.getEncodePath() + "/events/" + id;
     }
 
 

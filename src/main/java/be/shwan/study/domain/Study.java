@@ -188,4 +188,8 @@ public class Study {
     public String getEncodePath() {
         return URLEncoder.encode(path, StandardCharsets.UTF_8);
     }
+
+    public boolean updatable() {
+        return closed || !published;
+    }
 }

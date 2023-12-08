@@ -1,5 +1,6 @@
 package be.shwan.account.domain;
 
+import be.shwan.event.domain.Event;
 import be.shwan.settings.dto.NicknameForm;
 import be.shwan.settings.dto.Notifications;
 import be.shwan.settings.dto.ProfileInfo;
@@ -152,5 +153,9 @@ public class Account {
 
     public boolean isMemberOf(Study study) {
         return study.getMembers().contains(this);
+    }
+
+    public boolean isCreateBy(Event event) {
+        return event.getCreateBy().equals(this);
     }
 }

@@ -58,4 +58,6 @@ public interface StudyService {
     void join(Study study, Account account);
 
     void leave(Study study, Account account);
+
+    Study getStudyToEnroll(String path);
 }

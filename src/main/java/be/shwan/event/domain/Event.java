@@ -14,6 +14,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@NamedEntityGraph(name = "EventAll.withEnrollments", attributeNodes = {
+        @NamedAttributeNode("enrollments")
+})
 @NamedEntityGraph(name = "Event.withEnrollments", attributeNodes = {
         @NamedAttributeNode("enrollments")
 })
@@ -76,9 +79,14 @@ public class Event {
         if (enrollments.isEmpty()) {
             return true;
         }
-        Enrollment enrollment = enrollments.get(id.intValue());
-        return !account.equals(enrollment.getAccount());
+        for(Enrollment enrollment : enrollments) {
+            if(account.equals(enrollment.getAccount())) {
+                return false;
+            }
+        }
+        return true;
     }
+
     public boolean isDisenrollableFor(UserAccount userAccount) {
         return !isEnrollableFor(userAccount);
     }
@@ -88,8 +96,8 @@ public class Event {
         if (enrollments.isEmpty()) {
             return false;
         }
-        Enrollment enrollment = enrollments.get(id.intValue());
-         return enrollment.isAttended();
+        Enrollment enrollment = enrollments.stream().filter(e -> e.getEvent().equals(this)).findFirst().orElseThrow();
+        return enrollment.isAttended();
     }
 
     public boolean isEndEvent() {
@@ -98,5 +106,100 @@ public class Event {
 
     public int numberOfRemainSpots() {
         return this.limitOfEnrollments - (int) this.enrollments.stream().filter(Enrollment::isAccepted).count();
+    }
+
+    public void update(EventRequestDto eventRequestDto) {
+        title = eventRequestDto.title();
+        description = eventRequestDto.description();
+        limitOfEnrollments = eventRequestDto.limitOfEnrollments();
+        createDateTime = LocalDateTime.now();
+        endEnrollmentDateTime = LocalDateTime.parse(eventRequestDto.endEnrollmentDateTime());
+        startDateTime = LocalDateTime.parse(eventRequestDto.startDateTime());
+        endDateTime = LocalDateTime.parse(eventRequestDto.endDateTime());
+
+        if (limitOfEnrollments < eventRequestDto.limitOfEnrollments()) {
+            if (eventType == EventType.FCFS) {
+                updateEnrollAccepted(numberOfRemainSpots());
+            }
+        }
+
+    }
+
+    public void enroll(Enrollment enrollment) {
+        if (numberOfRemainSpots() > 0) {
+            enrollment.accept();
+        }
+        enrollments.add(enrollment);
+        enrollment.updateEvent(this);
+    }
+
+    public void leaveEnrollByFCFS(Event event, Account account) {
+        Enrollment enrollment = enrollments.stream().filter(e -> e.getAccount().equals(account)).findFirst().orElseThrow();
+        enrollments.remove(enrollment);
+
+        if (numberOfRemainSpots() > 0 && !enrollments.isEmpty()) {
+            updateEnrollAccepted(numberOfRemainSpots());
+        }
+
+    }
+
+    private void updateEnrollAccepted(int max) {
+        int addCount = 0;
+        for (int i = 0; i < enrollments.size(); i++) {
+            Enrollment nestEnrollment = enrollments.get(i);
+            if (!nestEnrollment.isAccepted()) {
+                nestEnrollment.accept();
+                addCount++;
+                nestEnrollment.updateEvent(this);
+            }
+
+            if (addCount >= max) {
+                return;
+            }
+        }
+    }
+
+    public boolean isAbleToAcceptWaitingEnrollment() {
+        return eventType == EventType.FCFS && numberOfRemainSpots() > 0;
+    }
+
+    public void addEnrollment(Enrollment enrollment) {
+        enrollments.add(enrollment);
+        enrollment.addEvent(this);
+    }
+
+    public void removeEnrollment(Enrollment enrollment) {
+        enrollments.remove(enrollment);
+        enrollment.removeEvent();
+    }
+
+    private Enrollment getTheFirstWaitingEnrollment() {
+        for(Enrollment element: enrollments) {
+            if(!element.isAccepted()){
+                return element;
+            }
+        }
+        return null;
+    }
+
+    public void acceptNextWaitingEnrollment() {
+        if (isAbleToAcceptWaitingEnrollment()) {
+            Enrollment enrollmentToAccepted = getTheFirstWaitingEnrollment();
+            if (enrollmentToAccepted != null) {
+                enrollmentToAccepted.accept();
+            }
+        }
+    }
+
+    public void acceptNextWaitingEnrollmentList() {
+        if (isAbleToAcceptWaitingEnrollment()) {
+            List<Enrollment> waitingEnrollments = getWaitingEnrollments();
+            int min = Math.min(numberOfRemainSpots(), waitingEnrollments.size());
+            waitingEnrollments.subList(0, min).forEach(Enrollment::accept);
+        }
+    }
+
+    private List<Enrollment> getWaitingEnrollments() {
+        return enrollments.stream().filter(enrollment -> !enrollment.isAccepted()).toList();
     }
 }

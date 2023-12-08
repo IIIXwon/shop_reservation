@@ -9,6 +9,10 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+@NamedEntityGraph(name = "Enrollment.withEventAndAccount", attributeNodes = {
+        @NamedAttributeNode("event"),
+        @NamedAttributeNode("account")
+})
 @Entity
 @NoArgsConstructor
 @EqualsAndHashCode
@@ -29,4 +33,27 @@ public class Enrollment {
     private boolean accepted;
 
     private boolean attended;
+
+    public Enrollment(Account account, Event event) {
+        this.event =  event;
+        this.account = account;
+        enrollAt = LocalDateTime.now();
+        accepted = event.isAbleToAcceptWaitingEnrollment();
+    }
+
+    public void accept() {
+        this.accepted = true;
+    }
+
+    public void updateEvent(Event event) {
+        this.event = event;
+    }
+
+    public void addEvent(Event event) {
+        this.event = event;
+    }
+
+    public void removeEvent() {
+        this.event = null;
+    }
 }
