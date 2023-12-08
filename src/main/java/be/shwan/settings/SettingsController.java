@@ -46,12 +46,12 @@ public class SettingsController {
 
     private final ObjectMapper objectMapper;
     final String PROFILE_PATH = "/profile";
-    final String PROFILE_VIEW = "/settings/profile";
-    final String PASSWORD_VIEW = "/settings/password";
+    final String PROFILE_VIEW = "settings/profile";
+    final String PASSWORD_VIEW = "settings/password";
     private final String PASSWORD_PATH = "/password";
     private final String NOTIFICATION_PATH = "/notifications";
-    private final String NOTIFICATION_VIEW = "/settings/notifications";
-    private final String ACCOUNT_VIEW = "/settings/account";
+    private final String NOTIFICATION_VIEW = "settings/notifications";
+    private final String ACCOUNT_VIEW = "settings/account";
 
     @InitBinder({"passwordForm"})
     public void initBinder(WebDataBinder webDataBinder) {
