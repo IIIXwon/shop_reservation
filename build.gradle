@@ -105,6 +105,10 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
     // https://mvnrepository.com/artifact/com.h2database/h2
     testImplementation group: 'com.h2database', name: 'h2', version: '2.2.224'
+
+    // https://mvnrepository.com/artifact/com.tngtech.archunit/archunit-junit5
+    testImplementation group: 'com.tngtech.archunit', name: 'archunit-junit5', version: '1.2.1'
+
 }
 
 processResources.dependsOn('npmInstall')
