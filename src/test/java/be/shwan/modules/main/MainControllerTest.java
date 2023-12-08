@@ -27,15 +27,16 @@ class MainControllerTest {
     @DisplayName("[POST] /login, nickname login 성공")
     @Test
     void login_with_nickname() throws Exception {
-        accountFactory.createAccount(AccountFactory.DEFAULT_ACCOUNT_NAME);
+        String nickname = "testUser";
+        accountFactory.createAccount(nickname);
 
         mockMvc.perform(post("/login").with(csrf())
-                        .param("username", AccountFactory.DEFAULT_ACCOUNT_NAME)
+                        .param("username", nickname)
                         .param("password", AccountFactory.DEFAULT_ACCOUNT_PASSWORD)
                 )
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/"))
-                .andExpect(authenticated().withUsername(AccountFactory.DEFAULT_ACCOUNT_NAME))
+                .andExpect(authenticated().withUsername(nickname))
         ;
     }
 

@@ -3,30 +3,20 @@ package be.shwan.modules.event.presentation;
 import be.shwan.infra.MockMvcTest;
 import be.shwan.modules.account.AccountFactory;
 import be.shwan.modules.account.WithAccount;
-import be.shwan.modules.account.application.AccountService;
 import be.shwan.modules.account.domain.Account;
-import be.shwan.modules.account.domain.AccountRepository;
-import be.shwan.modules.account.dto.SignUpFormDto;
 import be.shwan.modules.event.EventFactory;
-import be.shwan.modules.event.application.EnrollService;
 import be.shwan.modules.event.application.EventService;
-import be.shwan.modules.event.domain.*;
+import be.shwan.modules.event.domain.Enrollment;
+import be.shwan.modules.event.domain.Event;
+import be.shwan.modules.event.domain.EventType;
 import be.shwan.modules.event.dto.EventRequestDto;
 import be.shwan.modules.study.StudyFactory;
-import be.shwan.modules.study.application.StudyService;
 import be.shwan.modules.study.domain.Study;
-import be.shwan.modules.study.domain.StudyRepository;
-import be.shwan.modules.study.dto.StudyRequestDto;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -36,7 +26,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @MockMvcTest
-@ActiveProfiles("test")
 class EventControllerTest {
     private final String TEST_USER = "testUser";
     private final String ADMIN = "admin";

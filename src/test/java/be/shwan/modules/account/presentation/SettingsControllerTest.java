@@ -47,12 +47,6 @@ class SettingsControllerTest {
 
     private final String USER_NAME = "seunghwan";
 
-//    @AfterEach
-//    void clear() {
-//        accountRepository.deleteAll();
-//        tagRepository.deleteAll();
-//    }
-
     @WithAccount(USER_NAME)
     @DisplayName("[GET] /settings/profile, 프로필 작성 페이지 화면")
     @Test
