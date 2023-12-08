@@ -1,5 +1,6 @@
 package be.shwan.modules.event.presentation;
 
+import be.shwan.infra.AbstractContainerBaseTest;
 import be.shwan.infra.MockMvcTest;
 import be.shwan.modules.account.AccountFactory;
 import be.shwan.modules.account.WithAccount;
@@ -26,7 +27,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @MockMvcTest
-class EventControllerTest {
+class EventControllerTest extends AbstractContainerBaseTest {
     private final String TEST_USER = "testUser";
     private final String ADMIN = "admin";
     @Autowired

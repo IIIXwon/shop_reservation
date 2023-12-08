@@ -1,5 +1,6 @@
 package be.shwan.modules.account.presentation;
 
+import be.shwan.infra.AbstractContainerBaseTest;
 import be.shwan.infra.MockMvcTest;
 import be.shwan.infra.mail.application.EmailService;
 import be.shwan.infra.mail.dto.EmailMessage;
@@ -23,7 +24,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @MockMvcTest
-class AccountControllerTest {
+class AccountControllerTest extends AbstractContainerBaseTest {
     @Autowired
     MockMvc mockMvc;
 

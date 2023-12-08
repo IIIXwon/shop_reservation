@@ -108,6 +108,13 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation group: 'com.tngtech.archunit', name: 'archunit-junit5', version: '1.2.1'
+
+    // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
+    testImplementation group: 'org.testcontainers', name: 'testcontainers', version: '1.19.3'
+    // https://mvnrepository.com/artifact/org.testcontainers/junit-jupiter
+    testImplementation group: 'org.testcontainers', name: 'junit-jupiter', version: '1.19.3'
+    // https://mvnrepository.com/artifact/org.testcontainers/postgresql
+    testImplementation group: 'org.testcontainers', name: 'postgresql', version: '1.19.3'
 }
 
 processResources.dependsOn('npmInstall')

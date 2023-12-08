@@ -1,5 +1,6 @@
 package be.shwan.modules.account.presentation;
 
+import be.shwan.infra.AbstractContainerBaseTest;
 import be.shwan.infra.MockMvcTest;
 import be.shwan.modules.account.AccountFactory;
 import be.shwan.modules.account.WithAccount;
@@ -26,7 +27,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @MockMvcTest
-class SettingsControllerTest {
+class SettingsControllerTest extends AbstractContainerBaseTest {
     @Autowired
     MockMvc mockMvc;
 

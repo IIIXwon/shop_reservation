@@ -1,5 +1,6 @@
 package be.shwan.modules.study.presentation;
 
+import be.shwan.infra.AbstractContainerBaseTest;
 import be.shwan.infra.MockMvcTest;
 import be.shwan.modules.account.AccountFactory;
 import be.shwan.modules.account.WithAccount;
@@ -28,7 +29,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @MockMvcTest
-class StudyControllerTest {
+class StudyControllerTest extends AbstractContainerBaseTest {
     private final String USER_NAME = "seunghwan";
     @Autowired
     MockMvc mockMvc;
@@ -453,7 +454,7 @@ class StudyControllerTest {
     @Test
     void testRemoveStudy() throws Exception {
         Account manager = accountFactory.findAccountByNickname(USER_NAME);
-        Study newStduy = studyFactory.defaultTestCreateStudy(manager);
+        studyFactory.defaultTestCreateStudy(manager);
 
         mockMvc.perform(post("/study/{path}/settings/study/remove", StudyFactory.DEFAULT_PATH)
                         .with(csrf()))

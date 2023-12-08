@@ -1,5 +1,6 @@
 package be.shwan.modules.main;
 
+import be.shwan.infra.AbstractContainerBaseTest;
 import be.shwan.infra.MockMvcTest;
 import be.shwan.modules.account.AccountFactory;
 import org.junit.jupiter.api.DisplayName;
@@ -16,7 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @MockMvcTest
-class MainControllerTest {
+class MainControllerTest extends AbstractContainerBaseTest {
 
     @Autowired
     MockMvc mockMvc;
