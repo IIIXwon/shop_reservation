@@ -2,6 +2,8 @@ package be.shwan.event.presentation;
 
 import be.shwan.account.domain.Account;
 import be.shwan.account.domain.CurrentUser;
+import be.shwan.enrollment.domain.Enrollment;
+import be.shwan.enrollment.domain.EnrollmentRepository;
 import be.shwan.event.application.EventService;
 import be.shwan.event.domain.Event;
 import be.shwan.event.domain.EventRepository;
@@ -17,11 +19,9 @@ import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -30,6 +30,7 @@ public class EventController {
     private final EventService eventService;
     private final EventRepository eventRepository;
     private final StudyService studyService;
+    private final EnrollmentRepository enrollmentRepository;
 
 
     private final EventRequestDtoValidator eventRequestDtoValidator;
@@ -127,17 +128,49 @@ public class EventController {
     }
 
     @PostMapping(value = {"/study/{path}/events/{id}/enroll"})
-    public String enrollEvent(@CurrentUser Account account, @PathVariable String path, @PathVariable Long id, Model model) {
+    public String enrollEvent(@CurrentUser Account account, @PathVariable String path, @PathVariable Long id) {
         Study study = studyService.getStudyToEnroll(path);
         eventService.enrollEvent(eventRepository.findById(id).orElseThrow(), account);
         return "redirect:/study/" + study.getEncodePath() + "/events/" + id;
     }
 
     @PostMapping(value = {"/study/{path}/events/{id}/leave"})
-    public String leaveEvent(@CurrentUser Account account, @PathVariable String path, @PathVariable Long id, Model model) {
+    public String leaveEvent(@CurrentUser Account account, @PathVariable String path, @PathVariable Long id) {
         Study study = studyService.getStudyToEnroll(path);
         eventService.leaveEvent(eventRepository.findById(id).orElseThrow(), account);
         return "redirect:/study/" + study.getEncodePath() + "/events/" + id;
+    }
+
+    @GetMapping(value = {"/study/{path}/events/{eventId}/enrollments/{enrollmentId}/accept"})
+    public String acceptEvent(@CurrentUser Account account, @PathVariable String path, @PathVariable("eventId") Event event,
+                              @PathVariable("enrollmentId") Enrollment enrollment) {
+        Study study = studyService.getSimpleStudy(path, account);
+        eventService.acceptEnrollment(event, enrollment);
+        return "redirect:/study/" + study.getEncodePath() + "/events/" + event.getId();
+    }
+
+    @GetMapping(value = {"/study/{path}/events/{eventId}/enrollments/{enrollmentId}/reject"})
+    public String rejectEvent(@CurrentUser Account account, @PathVariable String path, @PathVariable("eventId") Event event,
+                              @PathVariable("enrollmentId") Enrollment enrollment) {
+        Study study = studyService.getSimpleStudy(path, account);
+        eventService.rejectEnrollment(event, enrollment);
+        return "redirect:/study/" + study.getEncodePath() + "/events/" + event.getId();
+    }
+
+    @GetMapping(value = {"/study/{path}/events/{eventId}/enrollments/{enrollmentId}/checkin"})
+    public String checkinEvent(@CurrentUser Account account, @PathVariable String path, @PathVariable("eventId") Event event,
+                               @PathVariable("enrollmentId") Enrollment enrollment) {
+        Study study = studyService.getSimpleStudy(path, account);
+        eventService.checkInEnrollment(enrollment);
+        return "redirect:/study/" + study.getEncodePath() + "/events/" + event.getId();
+    }
+
+    @GetMapping(value = {"/study/{path}/events/{eventId}/enrollments/{enrollmentId}/cancel-checkin"})
+    public String cancelCheckinEvent(@CurrentUser Account account, @PathVariable String path, @PathVariable("eventId") Event event,
+                                     @PathVariable("enrollmentId") Enrollment enrollment) {
+        Study study = studyService.getSimpleStudy(path, account);
+        eventService.cancelCheckInEnrollment(enrollment);
+        return "redirect:/study/" + study.getEncodePath() + "/events/" + event.getId();
     }
 
 

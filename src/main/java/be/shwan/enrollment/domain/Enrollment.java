@@ -56,4 +56,16 @@ public class Enrollment {
     public void removeEvent() {
         this.event = null;
     }
+
+    public void reject() {
+        accepted = false;
+    }
+
+    public void attend() {
+        attended = true;
+    }
+
+    public void cancelAttend() {
+        attended = false;
+    }
 }

@@ -1,6 +1,7 @@
 package be.shwan.event.application;
 
 import be.shwan.account.domain.Account;
+import be.shwan.enrollment.domain.Enrollment;
 import be.shwan.event.domain.Event;
 import be.shwan.event.dto.EventRequestDto;
 import be.shwan.study.domain.Study;
@@ -27,4 +28,16 @@ public interface EventService {
     void enrollEvent(Event event, Account account);
 
     void leaveEvent(Event event, Account account);
+
+    void acceptEnrollment(Event event, Long enrollmentId, Account account);
+
+    void rejectEnrollment(Event event, Long enrollmentId, Account account);
+
+    void acceptEnrollment(Event event, Enrollment enrollment);
+
+    void rejectEnrollment(Event event, Enrollment enrollment);
+
+    void checkInEnrollment(Enrollment enrollment);
+
+    void cancelCheckInEnrollment(Enrollment enrollment);
 }

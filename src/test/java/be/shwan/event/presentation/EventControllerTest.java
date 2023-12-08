@@ -4,6 +4,7 @@ import be.shwan.WithAccount;
 import be.shwan.account.application.AccountService;
 import be.shwan.account.domain.Account;
 import be.shwan.account.domain.AccountRepository;
+import be.shwan.account.dto.SignUpFormDto;
 import be.shwan.enrollment.application.EnrollService;
 import be.shwan.enrollment.domain.EnrollmentRepository;
 import be.shwan.enrollment.domain.Enrollment;
@@ -38,6 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 class EventControllerTest {
     private final String TEST_USER = "testUser";
+    private final String ADMIN = "admin";
     @Autowired
     MockMvc mockMvc;
 
@@ -63,16 +65,21 @@ class EventControllerTest {
     EnrollmentRepository enrollmentRepository;
 
     @BeforeEach
-    void init() {
+    void init() throws Exception {
         String path = "testPath";
         String testTitle = "testTitle";
         String testShotDescription = "testShotDescription";
         String testFullDescription = "testFullDescription";
-        Account byNickname = accountRepository.findByNickname(TEST_USER);
+        Account byNickname = getAccount(ADMIN);
         StudyRequestDto studyRequestDto = new StudyRequestDto(path, testTitle, testShotDescription, testFullDescription);
         Study study = studyService.newStudy(byNickname, studyRequestDto);
         studyService.publish(study);
+        EventRequestDto requestDto = new EventRequestDto("test", EventType.FCFS, 2,
+                "2023-12-07T12:44:00", "2023-12-08T12:44:00", "2023-12-31T12:44:00", "");
+        eventService.createEvent(byNickname, study, requestDto);
     }
+
+
 
     @AfterEach
     void afterEach() {
@@ -81,7 +88,7 @@ class EventControllerTest {
         accountRepository.deleteAll();
     }
 
-    @WithAccount(TEST_USER)
+    @WithAccount(ADMIN)
     @DisplayName("[GET] /study/{path}/new-event, 모임 생성 페이지")
     @Test
     void testEventForm() throws Exception {
@@ -89,19 +96,18 @@ class EventControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("events/form"))
                 .andExpect(model().attributeExists("account", "study", "eventRequestDto"))
-                .andExpect(authenticated().withUsername(TEST_USER))
+                .andExpect(authenticated().withUsername(ADMIN))
         ;
     }
 
-    @WithAccount(TEST_USER)
+    @WithAccount(ADMIN)
     @DisplayName("[POST] /study/{path}/new-event, 모임 생성")
     @Test
     void testNewEvent() throws Exception {
         String path = "testPath";
-
         mockMvc.perform(post("/study/{path}/new-event", path)
                         .param("title", "test")
-                        .param("eventType", EventType.CONFIRMATIVE.toString())
+                        .param("eventType", EventType.FCFS.toString())
                         .param("limitOfEnrollments", "2")
                         .param("endEnrollmentDateTime", "2023-12-07T12:44:00")
                         .param("startDateTime", "2023-12-08T00:00:00")
@@ -110,31 +116,26 @@ class EventControllerTest {
                         .with(csrf())
                 )
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/study/" + path + "/events/1"))
-                .andExpect(authenticated().withUsername(TEST_USER))
+                .andExpect(redirectedUrl("/study/" + path + "/events/2"))
+                .andExpect(authenticated().withUsername(ADMIN))
         ;
     }
 
-    @WithAccount(TEST_USER)
+    @WithAccount(ADMIN)
     @DisplayName("[GET] /study/{path}/events/{id}, 모임 상세 페이지")
     @Test
     void testEventViewPage() throws Exception {
         String path = "testPath";
-        Study study = studyService.getStudy(path);
-        Account byNickname = accountRepository.findByNickname(TEST_USER);
-        EventRequestDto requestDto = new EventRequestDto("test", EventType.CONFIRMATIVE, 2,
-                "2023-12-07T12:44:00", "2023-12-08T12:44:00", "2023-12-31T12:44:00", "");
-        eventService.createEvent(byNickname, study, requestDto);
         mockMvc.perform(get("/study/{path}/events/{id}", path, 1)
                 )
                 .andExpect(status().isOk())
                 .andExpect(view().name("events/view"))
                 .andExpect(model().attributeExists("account", "study", "event"))
-                .andExpect(authenticated().withUsername(TEST_USER))
+                .andExpect(authenticated().withUsername(ADMIN))
         ;
     }
 
-    @WithAccount(TEST_USER)
+    @WithAccount(ADMIN)
     @DisplayName("[GET] /study/{path}/events, 모임 목록 페이지")
     @Test
     void testEventListPage() throws Exception {
@@ -144,40 +145,29 @@ class EventControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("study/events"))
                 .andExpect(model().attributeExists("account", "newEvents", "oldEvents"))
-                .andExpect(authenticated().withUsername(TEST_USER))
+                .andExpect(authenticated().withUsername(ADMIN))
         ;
     }
 
-    @WithAccount(TEST_USER)
+    @WithAccount(ADMIN)
     @DisplayName("[GET] /study/{path}/events/{id}/edit, 모임 수정 페이지")
     @Test
     void testUpdateEventFormPage() throws Exception {
         String path = "testPath";
-        Study study = studyService.getStudy(path);
-        Account byNickname = accountRepository.findByNickname(TEST_USER);
-        EventRequestDto requestDto = new EventRequestDto("test", EventType.CONFIRMATIVE, 2,
-                "2023-12-07T12:44:00", "2023-12-08T12:44:00", "2023-12-31T12:44:00", "");
-        eventService.createEvent(byNickname, study, requestDto);
         mockMvc.perform(get("/study/{path}/events/{id}/edit", path, 1)
                 )
                 .andExpect(status().isOk())
                 .andExpect(view().name(EventController.EVENT_UPDATE_FORM_VIEW))
                 .andExpect(model().attributeExists("account", "study", "eventRequestDto"))
-                .andExpect(authenticated().withUsername(TEST_USER))
+                .andExpect(authenticated().withUsername(ADMIN))
         ;
     }
 
-    @WithAccount(TEST_USER)
+    @WithAccount(ADMIN)
     @DisplayName("[POST] /study/{path}/events/{id}/edit, 모임 수정")
     @Test
     void testUpdateEvent() throws Exception {
         String path = "testPath";
-        Study study = studyService.getStudy(path);
-        Account byNickname = accountRepository.findByNickname(TEST_USER);
-        EventRequestDto requestDto = new EventRequestDto("test", EventType.CONFIRMATIVE, 2,
-                "2023-12-07T12:44:00", "2023-12-08T12:44:00", "2023-12-31T12:44:00", "");
-        eventService.createEvent(byNickname, study, requestDto);
-
         mockMvc.perform(post("/study/{path}/events/{id}/edit", path, 1)
                         .param("title", "한글")
                         .param("eventType", EventType.CONFIRMATIVE.toString())
@@ -190,26 +180,21 @@ class EventControllerTest {
                 )
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/study/" + path + "/events/1"))
-                .andExpect(authenticated().withUsername(TEST_USER))
+                .andExpect(authenticated().withUsername(ADMIN))
         ;
     }
 
-    @WithAccount(TEST_USER)
+    @WithAccount(ADMIN)
     @DisplayName("[DELETE] /study/{path}/events/{id}, 모임 삭제")
     @Test
     void testDeleteEvent() throws Exception {
         String path = "testPath";
-        Study study = studyService.getStudy(path);
-        Account byNickname = accountRepository.findByNickname(TEST_USER);
-        EventRequestDto requestDto = new EventRequestDto("test", EventType.CONFIRMATIVE, 2,
-                "2023-12-07T12:44:00", "2023-12-08T12:44:00", "2023-12-31T12:44:00", "");
-        eventService.createEvent(byNickname, study, requestDto);
         mockMvc.perform(delete("/study/{path}/events/{id}", path, 1)
                         .with(csrf())
                 )
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/study/" + path + "/events"))
-                .andExpect(authenticated().withUsername(TEST_USER))
+                .andExpect(authenticated().withUsername(ADMIN))
         ;
     }
 
@@ -218,12 +203,6 @@ class EventControllerTest {
     @Test
     void testEnrollEvent() throws Exception {
         String path = "testPath";
-        Study study = studyService.getStudy(path);
-        Account byNickname = accountRepository.findByNickname(TEST_USER);
-        EventRequestDto requestDto = new EventRequestDto("test", EventType.FCFS, 2,
-                "2023-12-07T12:44:00", "2023-12-08T12:44:00", "2023-12-31T12:44:00", "");
-        Event event = eventService.createEvent(byNickname, study, requestDto);
-
         mockMvc.perform(post("/study/{path}/events/{id}/enroll", path, 1)
                         .with(csrf())
                 )
@@ -232,10 +211,8 @@ class EventControllerTest {
                 .andExpect(authenticated().withUsername(TEST_USER))
         ;
 
-        Enrollment enrollment = enrollmentRepository.findEnrollmentWithEventAndAccountByEventAndAccount(event, byNickname);
-        assertEquals(byNickname, enrollment.getAccount());
-        assertEquals(event, enrollment.getEvent());
-        assertEquals(1, enrollment.getId());
+        List<Enrollment> all = enrollmentRepository.findAll();
+        assertEquals(1, all.size());
     }
 
     @WithAccount(TEST_USER)
@@ -243,12 +220,9 @@ class EventControllerTest {
     @Test
     void testLeaveEvent() throws Exception {
         String path = "testPath";
-        Study study = studyService.getStudy(path);
-        Account byNickname = accountRepository.findByNickname(TEST_USER);
-        EventRequestDto requestDto = new EventRequestDto("test", EventType.FCFS, 2,
-                "2023-12-07T12:44:00", "2023-12-08T12:44:00", "2023-12-31T12:44:00", "");
-        Event event = eventService.createEvent(byNickname, study, requestDto);
-        eventService.enrollEvent(event, byNickname, study);
+        Event event = eventRepository.findById(1L).orElseThrow();
+        Account account = accountRepository.findByNickname(TEST_USER);
+        eventService.enrollEvent(event, account);
         mockMvc.perform(post("/study/{path}/events/{id}/leave", path, 1)
                         .with(csrf())
                 )
@@ -260,4 +234,64 @@ class EventControllerTest {
         List<Enrollment> all = enrollmentRepository.findAll();
         assertEquals(0, all.size());
     }
+
+    @WithAccount(ADMIN)
+    @DisplayName("[POST] /study/{path}/events/{id}/enrollments/{enrollmentId}/accept, 모임 참가 승인")
+    @Test
+    void testAcceptEvent() throws Exception {
+        String path = "testPath";
+        Study study = studyRepository.findStudyWithMembersAndManagersByPath(path);
+        Account admin = getAccount(ADMIN);
+        EventRequestDto requestDto = new EventRequestDto("test", EventType.CONFIRMATIVE, 10,
+                "2023-12-10T12:44:00", "2023-12-11T12:44:00", "2023-12-31T12:44:00", "");
+        eventService.createEvent(admin, study, requestDto);
+        Event event = eventRepository.findById(2L).orElseThrow();
+        Account account = getAccount(TEST_USER);
+        eventService.enrollEvent(event, account);
+        mockMvc.perform(post("/study/{path}/events/{id}/enrollments/{enrollmentId}/accept", path, 2, 1)
+                        .with(csrf())
+                )
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/study/" + path + "/events/2"))
+                .andExpect(authenticated().withUsername(ADMIN))
+        ;
+
+        List<Enrollment> all = enrollmentRepository.findAll();
+        assertEquals(1, all.size());
+    }
+
+    @WithAccount(ADMIN)
+    @DisplayName("[POST] /study/{path}/events/{id}/enrollments/{enrollmentId}/reject, 모임 참가 승인 취소")
+    @Test
+    void testRejectEvent() throws Exception {
+        String path = "testPath";
+        Study study = studyRepository.findStudyWithMembersAndManagersByPath(path);
+        Account admin = getAccount(ADMIN);
+        EventRequestDto requestDto = new EventRequestDto("test", EventType.CONFIRMATIVE, 10,
+                "2023-12-10T12:44:00", "2023-12-11T12:44:00", "2023-12-31T12:44:00", "");
+        eventService.createEvent(admin, study, requestDto);
+        Event event = eventRepository.findById(2L).orElseThrow();
+        Account account = getAccount(TEST_USER);
+        eventService.enrollEvent(event, account);
+        mockMvc.perform(post("/study/{path}/events/{id}/enrollments/{enrollmentId}/reject", path, 2, 1)
+                        .with(csrf())
+                )
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/study/" + path + "/events/2"))
+                .andExpect(authenticated().withUsername(ADMIN))
+        ;
+
+        List<Enrollment> all = event.getEnrollments();
+        assertEquals(0, all.size());
+    }
+
+    private Account getAccount(String nickname) throws Exception {
+        Account byNickname = accountRepository.findByNickname(nickname);
+        if( byNickname == null ) {
+            byNickname = accountService.processNewAccount(new SignUpFormDto(nickname, "admin@admin.com", "12345678"));
+        }
+        return byNickname;
+    }
+
+
 }

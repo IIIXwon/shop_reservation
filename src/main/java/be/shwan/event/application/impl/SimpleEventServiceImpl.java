@@ -124,6 +124,42 @@ public class SimpleEventServiceImpl implements EventService {
         eventRepository.delete(event);
     }
 
+    @Override
+    public void acceptEnrollment(Event event, Long enrollmentId, Account account) {
+        if(event.isAbleToAcceptEnrollment()) {
+            Enrollment enrollment = enrollmentRepository.findById(enrollmentId).orElseThrow();
+            enrollment.accept();
+        }
+    }
+
+    @Override
+    public void acceptEnrollment(Event event, Enrollment enrollment) {
+        event.accept(enrollment);
+    }
+
+    @Override
+    public void rejectEnrollment(Event event, Long enrollmentId, Account account) {
+        Enrollment enrollment = enrollmentRepository.findById(enrollmentId).orElseThrow();
+        if(event.isAbleToRejectEnrollment(enrollment)) {
+            enrollment.reject();
+        }
+    }
+
+    @Override
+    public void rejectEnrollment(Event event, Enrollment enrollment) {
+        event.reject(enrollment);
+    }
+
+    @Override
+    public void checkInEnrollment(Enrollment enrollment) {
+        enrollment.attend();
+    }
+
+    @Override
+    public void cancelCheckInEnrollment(Enrollment enrollment) {
+        enrollment.cancelAttend();
+    }
+
     @Transactional(readOnly = true)
     @Override
     public List<Event> getEventByStudy(Study study) {

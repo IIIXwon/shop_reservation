@@ -75,20 +75,11 @@ public class Event {
     }
 
     public boolean isEnrollableFor(UserAccount userAccount) {
-        Account account = userAccount.getAccount();
-        if (enrollments.isEmpty()) {
-            return true;
-        }
-        for(Enrollment enrollment : enrollments) {
-            if(account.equals(enrollment.getAccount())) {
-                return false;
-            }
-        }
-        return true;
+        return isNotClosed() && !isAttended(userAccount) && !isAlreadyEnrolled(userAccount);
     }
 
     public boolean isDisenrollableFor(UserAccount userAccount) {
-        return !isEnrollableFor(userAccount);
+        return isNotClosed() && !isAttended(userAccount) && isAlreadyEnrolled(userAccount);
     }
 
     public boolean isAttended(UserAccount userAccount) {
@@ -100,8 +91,38 @@ public class Event {
         return enrollment.isAttended();
     }
 
+    private boolean isNotClosed() {
+        return this.endEnrollmentDateTime.isAfter(LocalDateTime.now());
+    }
+
+    private boolean isAlreadyEnrolled(UserAccount userAccount) {
+        Account account = userAccount.getAccount();
+        for (Enrollment e : this.enrollments) {
+            if (e.getAccount().equals(account)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
     public boolean isEndEvent() {
         return LocalDateTime.now().isAfter(endDateTime);
+    }
+
+    public boolean canAccept(Enrollment enrollment) {
+        return this.eventType == EventType.CONFIRMATIVE
+                && this.enrollments.contains(enrollment)
+                && numberOfRemainSpots() > 0
+                && !enrollment.isAttended()
+                && !enrollment.isAccepted();
+    }
+
+    public boolean canReject(Enrollment enrollment) {
+        return this.eventType == EventType.CONFIRMATIVE
+                && this.enrollments.contains(enrollment)
+                && !enrollment.isAttended()
+                && enrollment.isAccepted();
     }
 
     public int numberOfRemainSpots() {
@@ -163,6 +184,20 @@ public class Event {
         return eventType == EventType.FCFS && numberOfRemainSpots() > 0;
     }
 
+    public boolean isAbleToAcceptEnrollment() {
+        return eventType == EventType.CONFIRMATIVE && numberOfRemainSpots() > 0
+                && !isEndEnrollmentDateTime() && !study.isClosed();
+    }
+
+    public boolean isAbleToRejectEnrollment(Enrollment enrollment) {
+        return eventType == EventType.CONFIRMATIVE && !enrollment.isAccepted() && !enrollment.isAttended()
+                && !isEndEnrollmentDateTime() && !study.isClosed();
+    }
+
+    private boolean isEndEnrollmentDateTime() {
+        return LocalDateTime.now().isAfter(endEnrollmentDateTime);
+    }
+
     public void addEnrollment(Enrollment enrollment) {
         enrollments.add(enrollment);
         enrollment.addEvent(this);
@@ -199,7 +234,26 @@ public class Event {
         }
     }
 
+    public boolean canAccept(UserAccount userAccount) {
+        return false;
+    }
+
+    public boolean canReject(UserAccount userAccount) {
+        return false;
+    }
+
     private List<Enrollment> getWaitingEnrollments() {
         return enrollments.stream().filter(enrollment -> !enrollment.isAccepted()).toList();
+    }
+
+    public void accept(Enrollment enrollment) {
+        if(eventType == EventType.CONFIRMATIVE && numberOfRemainSpots() > 0) {
+            enrollment.accept();
+        }
+    }
+
+    public void reject(Enrollment enrollment) {
+        if(eventType == EventType.CONFIRMATIVE)
+            enrollment.reject();
     }
 }
