@@ -48,12 +48,13 @@ public class SimpleEventServiceImpl implements EventService {
     }
 
     @Override
-    public void enrollEvent(Event event, Account account) {
+    public Enrollment enrollEvent(Event event, Account account) throws IllegalAccessException {
         if(!enrollmentRepository.existsByEventAndAccount(event, account)){
             Enrollment enrollment = new Enrollment(account, event);
             event.addEnrollment(enrollment);
-            enrollmentRepository.save(enrollment);
+            return enrollmentRepository.save(enrollment);
         }
+        throw new IllegalAccessException("잘못된 접근입니다");
     }
 
     @Override

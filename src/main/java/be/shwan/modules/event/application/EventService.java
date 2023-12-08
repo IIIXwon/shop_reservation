@@ -25,7 +25,7 @@ public interface EventService {
 
     void leaveEvent(Event event, Account account, Study study);
 
-    void enrollEvent(Event event, Account account);
+    Enrollment enrollEvent(Event event, Account account) throws IllegalAccessException;
 
     void leaveEvent(Event event, Account account);
 

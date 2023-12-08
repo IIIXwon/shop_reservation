@@ -44,8 +44,10 @@ public class StudySettingsController {
 
     private final ObjectMapper objectMapper;
     private final StudyPathRequestDtoValidator studyPathRequestDtoValidator;
-    private final String STUDY_DESCRIPTION_SETTING_VIEW = "study/settings/description";
-    private final String STUDY_SETTINGS_VIEW = "study/settings/study";
+    static final String STUDY_SETTINGS_VIEW = "study/settings/study";
+    static final String STUDY_SETTING_DESCRIPTION_VIEW = "study/settings/description";
+    static final String STUDY_SETTING_BANNER_VIEW = "study/settings/banner";
+    static final String STUDY_SETTING_ZONE_VIEW = "study/settings/zones";
 
     @InitBinder("studyPathRequestDto")
     public void initBinder(WebDataBinder webDataBinder) {
@@ -56,7 +58,7 @@ public class StudySettingsController {
         Study byPath = studyService.getStudyToUpdate(path, account);
         model.addAttribute(byPath);
         model.addAttribute(new StudyDescriptionRequestDto(byPath.getShortDescription(), byPath.getFullDescription()));
-        return STUDY_DESCRIPTION_SETTING_VIEW;
+        return STUDY_SETTING_DESCRIPTION_VIEW;
     }
 
     @PostMapping(value = {"/description"})
@@ -64,7 +66,7 @@ public class StudySettingsController {
                                          @Valid StudyDescriptionRequestDto studyDescriptionRequestDto, Errors errors,
                                          RedirectAttributes redirectAttributes) {
         if (errors.hasErrors()) {
-            return STUDY_DESCRIPTION_SETTING_VIEW;
+            return STUDY_SETTING_DESCRIPTION_VIEW;
         }
         Study byPath = studyService.getStudyToUpdate(path, account);
         studyService.updateDescription(byPath, studyDescriptionRequestDto);
@@ -76,7 +78,7 @@ public class StudySettingsController {
     public String studyBannerPage(@CurrentUser Account account, @PathVariable String path, Model model) {
         Study study = studyService.getStudyToUpdate(path, account);
         model.addAttribute(study);
-        return "study/settings/banner";
+        return STUDY_SETTING_BANNER_VIEW;
     }
 
     @PostMapping(value = {"/banner"})
@@ -150,7 +152,7 @@ public class StudySettingsController {
         model.addAttribute("zones", zones);
         model.addAttribute("whitelist", objectMapper.writeValueAsString(zoneStr));
         model.addAttribute(study);
-        return "study/settings/zones";
+        return STUDY_SETTING_ZONE_VIEW;
     }
 
     @PostMapping(value = {"/zones/add"})

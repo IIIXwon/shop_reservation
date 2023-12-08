@@ -26,9 +26,11 @@ public class StudyController {
 
     private final StudyService studyService;
 
-    private final String STUDY_FORM_VIEW = "study/form";
 
     private final StudyRequestDtoValidator studyRequestDtoValidator;
+    static final String STUDY_FORM_VIEW = "study/form";
+    static final String STUDY_VIEW_PATH = "study/view";
+    static final String STUDY_MEMBER_VIEW = "study/members";
 
     @InitBinder("studyRequestDto")
     public void initBinder(WebDataBinder webDataBinder) {
@@ -57,14 +59,14 @@ public class StudyController {
         Study byPath =  studyService.getStudy(path);
         model.addAttribute(byPath);
         model.addAttribute(account);
-        return "study/view";
+        return STUDY_VIEW_PATH;
     }
 
     @GetMapping(value = {"/study/{path}/members"})
     public String studyMemberPage(@PathVariable String path, Model model) {
         Study byPath = studyService.getStudy(path);
         model.addAttribute(byPath);
-        return "study/members";
+        return STUDY_MEMBER_VIEW;
     }
 
     @PostMapping(value = {"/study/{path}/join"})

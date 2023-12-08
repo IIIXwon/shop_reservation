@@ -1,6 +1,7 @@
 package be.shwan.modules.zone.application;
 
 import be.shwan.modules.zone.domain.Zone;
+import be.shwan.modules.zone.dto.RequestZoneDto;
 import be.shwan.modules.zone.dto.ResponseZoneDto;
 
 import java.util.Collection;

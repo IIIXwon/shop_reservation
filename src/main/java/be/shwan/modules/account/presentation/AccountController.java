@@ -26,11 +26,13 @@ public class AccountController {
 
     private final SignUpFormValidator signUpFormValidator;
 
-    private final String SIGN_UP_PAGE = "accounts/sign-up";
-    private final String CHECK_EMAIL_VIEW = "accounts/check-email";
-    private final String REDIRECT_ROOT = "redirect:/";
-    private final String CHECK_LOGIN_EMAIL = "accounts/check-login-email";
-    private final String LOGGED_IN_BY_EMAIL = "accounts/logged-in-by-email";
+    static final String SIGN_UP_PAGE = "accounts/sign-up";
+    static final String CHECK_EMAIL_VIEW = "accounts/check-email";
+    static final String REDIRECT_ROOT = "redirect:/";
+    static final String CHECK_LOGIN_EMAIL = "accounts/check-login-email";
+    static final String LOGGED_IN_BY_EMAIL = "accounts/logged-in-by-email";
+    static final String CHECKED_EMAIL_VIEW = "accounts/checked-email";
+    static final String EMAIL_LOGIN_VIEW = "accounts/email-login";
 
     @InitBinder("signUpFormDto")
     public void initBinder(WebDataBinder webDataBinder) {
@@ -63,22 +65,21 @@ public class AccountController {
     @GetMapping(value = {"/check-email-token"})
     public String checkEmailToken(@RequestParam String token, @RequestParam String email, Model model) {
         Account account = accountRepository.findByEmail(email);
-        String view = "accounts/checked-email";
         if (account == null) {
             model.addAttribute("error", "wrong.email");
-            return view;
+            return CHECKED_EMAIL_VIEW;
         }
 
         if (!account.isValidToken(token)) {
             model.addAttribute("error", "wrong.token");
-            return view;
+            return CHECKED_EMAIL_VIEW;
         }
 
 
         accountService.completeSignUp(account);
         model.addAttribute("numberOfUser", accountRepository.count());
         model.addAttribute("nickname", account.getNickname());
-        return view;
+        return CHECKED_EMAIL_VIEW;
     }
 
     @GetMapping(value = {"/check-email"})
@@ -112,7 +113,7 @@ public class AccountController {
 
     @GetMapping(value = {"/email-login"})
     public String emailLoginPage() {
-        return "accounts/email-login";
+        return EMAIL_LOGIN_VIEW;
     }
 
     @PostMapping(value = {"/email-login"})

@@ -1,24 +1,19 @@
 package be.shwan.modules.account.presentation;
 
+import be.shwan.infra.MockMvcTest;
 import be.shwan.infra.mail.application.EmailService;
 import be.shwan.infra.mail.dto.EmailMessage;
-import be.shwan.modules.account.application.AccountService;
+import be.shwan.modules.account.AccountFactory;
 import be.shwan.modules.account.domain.Account;
-import be.shwan.modules.account.domain.AccountRepository;
-import be.shwan.modules.account.dto.SignUpFormDto;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.then;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -28,34 +23,35 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@Transactional
+@MockMvcTest
 @ActiveProfiles("local")
 class AccountControllerTest {
 
-    private final String accountView = "accounts/sign-up";
+//    private final String accountView = "accounts/sign-up";
     @Autowired
     MockMvc mockMvc;
 
-    @Autowired
-    AccountRepository accountRepository;
+//    @Autowired
+//    AccountRepository accountRepository;
+//
+//    @Autowired
+//    AccountService accountService;
 
     @Autowired
-    AccountService accountService;
+    AccountFactory accountFactory;
     @MockBean
     EmailService emailService;
 
-    @AfterEach
-    void end() {
-        accountRepository.deleteAll();
-    }
+//    @AfterEach
+//    void end() {
+//        accountRepository.deleteAll();
+//    }
     @DisplayName("[GET] /sign-up 회원가입 페이지 접근")
     @Test
     void testSignUpPage() throws Exception {
         mockMvc.perform(get("/sign-up"))
                 .andExpect(model().attributeExists("signUpFormDto"))
-                .andExpect(view().name(accountView))
+                .andExpect(view().name(AccountController.SIGN_UP_PAGE))
                 .andExpect(status().isOk())
                 .andExpect(unauthenticated())
         ;
@@ -75,8 +71,8 @@ class AccountControllerTest {
                 .andExpect(authenticated().withUsername(nickname))
         ;
 
-        Account account = accountRepository.findByEmail("asdf@adsf.com");
-        assertTrue(accountRepository.existsByEmail("asdf@adsf.com"));
+        Account account =  accountFactory.findAccountByNickname(nickname);
+        assertNotNull(account);
         assertNotNull(account.getEmailCheckToken());
         then(emailService).should().sendEmail(any(EmailMessage.class));
     }
@@ -87,7 +83,7 @@ class AccountControllerTest {
         mockMvc.perform(post("/sign-up").with(csrf())
                         .param("nickname", "asdf128391273"))
                 .andExpect(status().isOk())
-                .andExpect(view().name(accountView))
+                .andExpect(view().name(AccountController.SIGN_UP_PAGE))
                 .andExpect(model().hasErrors())
                 .andExpect(model().attributeHasErrors())
                 .andExpect(unauthenticated())
@@ -98,10 +94,8 @@ class AccountControllerTest {
     @Test
     @Transactional
     void testCheckEmailToken() throws Exception {
-        String email = "asdf@adsf.com";
         String nickname = "asdf";
-        Account account = new Account(nickname, email, "1234qwe");
-        accountRepository.save(account);
+        Account account = accountFactory.createAccount(nickname);
         account.generateEmailCheckToken();
 
         mockMvc.perform(get("/check-email-token")
@@ -110,7 +104,7 @@ class AccountControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("nickname", "numberOfUser"))
                 .andExpect(model().attribute("nickname", nickname))
-                .andExpect(view().name("accounts/checked-email"))
+                .andExpect(view().name(AccountController.CHECKED_EMAIL_VIEW))
                 .andExpect(authenticated().withUsername(nickname))
         ;
     }
@@ -123,7 +117,7 @@ class AccountControllerTest {
                         .param("email", "sdfkhkshdfa@Sd.com"))
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("error"))
-                .andExpect(view().name("accounts/checked-email"))
+                .andExpect(view().name(AccountController.CHECKED_EMAIL_VIEW))
                 .andExpect(unauthenticated())
 
         ;
@@ -134,7 +128,7 @@ class AccountControllerTest {
     void testEmailLoginPage() throws Exception {
         mockMvc.perform(get("/email-login"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("accounts/email-login"))
+                .andExpect(view().name(AccountController.EMAIL_LOGIN_VIEW))
                 .andExpect(unauthenticated())
         ;
     }
@@ -142,22 +136,19 @@ class AccountControllerTest {
     @DisplayName("[POST] /email-login, 이메일 로그인 url 발급 요청")
     @Test
     void testEmailLoginIssue() throws Exception {
-        SignUpFormDto testUser = SignUpFormDto.builder()
-                .email("test@test.com")
-                .password("12345678")
-                .nickname("testUser")
-                .build();
-        accountService.processNewAccount(testUser);
+        String nickname = "testUser";
+        Account newAccount = accountFactory.createAccount(nickname);
+        newAccount.issueEmailLoginToken();
 
         mockMvc.perform(post("/email-login").with(csrf())
                         .param("email", "test@test.com"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("accounts/check-login-email"))
+                .andExpect(view().name(AccountController.CHECK_LOGIN_EMAIL))
                 .andExpect(unauthenticated())
         ;
 
-        Account account = accountRepository.findByEmail("test@test.com");
-        assertTrue(accountRepository.existsByEmail("test@test.com"));
+        Account account = accountFactory.findAccountByNickname(nickname);
+        assertNotNull(account);
         assertNotNull(account.getEmailLoginToken());
     }
 
@@ -167,7 +158,7 @@ class AccountControllerTest {
         mockMvc.perform(post("/email-login").with(csrf())
                         .param("email", "tes2t@test.com"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("accounts/check-login-email"))
+                .andExpect(view().name(AccountController.CHECK_LOGIN_EMAIL))
                 .andExpect(model().attributeExists("error"))
                 .andExpect(unauthenticated())
         ;
@@ -177,20 +168,16 @@ class AccountControllerTest {
     @Test
     void testEmailLogin() throws Exception {
 
-        SignUpFormDto testUser = SignUpFormDto.builder()
-                .email("test@test.com")
-                .password("12345678")
-                .nickname("testUser")
-                .build();
-        Account newAccount = accountService.processNewAccount(testUser);
-        accountService.sendEmailLoginUrl(newAccount);
+        String nickname = "testUser";
+        Account account = accountFactory.createAccount(nickname);
+        account.issueEmailLoginToken();
 
         mockMvc.perform(get("/login-by-email")
-                        .param("email", newAccount.getEmail())
-                        .param("token", newAccount.getEmailLoginToken()))
+                        .param("email", account.getEmail())
+                        .param("token", account.getEmailLoginToken()))
                 .andExpect(status().isOk())
-                .andExpect(view().name("accounts/logged-in-by-email"))
-                .andExpect(authenticated().withUsername("testUser"))
+                .andExpect(view().name(AccountController.LOGGED_IN_BY_EMAIL))
+                .andExpect(authenticated().withUsername(nickname))
         ;
     }
 
@@ -201,7 +188,7 @@ class AccountControllerTest {
                         .param("email", "")
                         .param("token", ""))
                 .andExpect(status().isOk())
-                .andExpect(view().name("accounts/logged-in-by-email"))
+                .andExpect(view().name(AccountController.LOGGED_IN_BY_EMAIL))
                 .andExpect(model().attributeExists("error"))
                 .andExpect(unauthenticated())
         ;

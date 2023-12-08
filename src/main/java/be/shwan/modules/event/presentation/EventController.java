@@ -36,6 +36,8 @@ public class EventController {
     private final EventRequestDtoValidator eventRequestDtoValidator;
     static final String EVENT_FORM_VIEW = "events/form";
     static final String EVENT_UPDATE_FORM_VIEW = "events/update-form";
+    static final String EVENT_VIEW = "events/view";
+    static final String STUDY_EVENT_VIEW = "study/events";
 
     @InitBinder("eventRequestDto")
     public void setEventRequestDtoValidator(WebDataBinder webDataBinder) {
@@ -74,7 +76,7 @@ public class EventController {
         model.addAttribute(account);
         model.addAttribute(study);
         model.addAttribute(event);
-        return "events/view";
+        return EVENT_VIEW;
     }
 
     @GetMapping(value = {"/study/{path}/events"})
@@ -87,7 +89,7 @@ public class EventController {
         model.addAttribute(study);
         model.addAttribute("newEvents", eventList.get(0));
         model.addAttribute("oldEvents", eventList.get(1));
-        return "study/events";
+        return STUDY_EVENT_VIEW;
     }
 
     @GetMapping(value = {"/study/{path}/events/{id}/edit"})
@@ -128,7 +130,7 @@ public class EventController {
     }
 
     @PostMapping(value = {"/study/{path}/events/{id}/enroll"})
-    public String enrollEvent(@CurrentUser Account account, @PathVariable String path, @PathVariable Long id) {
+    public String enrollEvent(@CurrentUser Account account, @PathVariable String path, @PathVariable Long id) throws IllegalAccessException {
         Study study = studyService.getStudyToEnroll(path);
         eventService.enrollEvent(eventRepository.findById(id).orElseThrow(), account);
         return "redirect:/study/" + study.getEncodePath() + "/events/" + id;

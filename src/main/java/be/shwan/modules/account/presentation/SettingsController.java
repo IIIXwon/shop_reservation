@@ -42,13 +42,12 @@ public class SettingsController {
     private final NicknameFormValidator nicknameFormValidator;
 
     private final ObjectMapper objectMapper;
-    final String PROFILE_PATH = "/profile";
-    final String PROFILE_VIEW = "settings/profile";
-    final String PASSWORD_VIEW = "settings/password";
-    private final String PASSWORD_PATH = "/password";
-    private final String NOTIFICATION_PATH = "/notifications";
-    private final String NOTIFICATION_VIEW = "settings/notifications";
-    private final String ACCOUNT_VIEW = "settings/account";
+    static final String PROFILE_VIEW = "settings/profile";
+    static final String PASSWORD_VIEW = "settings/password";
+    static final String NOTIFICATION_VIEW = "settings/notifications";
+    static final String ACCOUNT_VIEW = "settings/account";
+    static final String TAG_VIEW = "settings/tags";
+    static final String ZONE_VIEW = "settings/zones";
 
     @InitBinder({"passwordForm"})
     public void initBinder(WebDataBinder webDataBinder) {
@@ -61,7 +60,7 @@ public class SettingsController {
         webDataBinder.addValidators(nicknameFormValidator);
     }
 
-    @GetMapping(value = {PROFILE_PATH})
+    @GetMapping(value = {"/profile"})
     public String profilePage(@CurrentUser Account account, Model model) {
         model.addAttribute(account);
         model.addAttribute(new ProfileInfo(account.getBio(), account.getUrl(), account.getOccupation(),
@@ -69,7 +68,7 @@ public class SettingsController {
         return PROFILE_VIEW;
     }
 
-    @PostMapping(value = {PROFILE_PATH})
+    @PostMapping(value = {"/profile"})
     public String updateProfile(@CurrentUser Account account, @Valid ProfileInfo profileInfo, Errors errors,
                                 Model model, RedirectAttributes redirectAttributes) {
         if (errors.hasErrors()) {
@@ -81,13 +80,13 @@ public class SettingsController {
         return "redirect:/settings/profile";
     }
 
-    @GetMapping(value = {PASSWORD_PATH})
+    @GetMapping(value = {"/password"})
     public String passwordPage(Model model) {
         model.addAttribute(new PasswordForm("", ""));
         return PASSWORD_VIEW;
     }
 
-    @PostMapping(value = {PASSWORD_PATH})
+    @PostMapping(value = {"/password"})
     public String updatePassword(@CurrentUser Account account, @Valid PasswordForm passwordForm, Errors errors,
                                  RedirectAttributes redirectAttributes) {
         if (errors.hasErrors()) {
@@ -98,14 +97,14 @@ public class SettingsController {
         return "redirect:/settings/password";
     }
 
-    @GetMapping(NOTIFICATION_PATH)
+    @GetMapping("/notifications")
     public String notificationPage(@CurrentUser Account account, Model model) {
         model.addAttribute(new Notifications(account.isStudyCreatedByEmail(), account.isStudyCreatedByWeb(), account.isStudyEnrollmentResultByEmail(),
                 account.isStudyEnrollmentResultByWeb(), account.isStudyUpdatedByEmail(), account.isStudyUpdatedByWeb()));
         return NOTIFICATION_VIEW;
     }
 
-    @PostMapping(NOTIFICATION_PATH)
+    @PostMapping("/notifications")
     public String updateNotification(@CurrentUser Account account, @Valid Notifications notifications, Errors errors,
                                      RedirectAttributes redirectAttributes) {
         if (errors.hasErrors()) {
@@ -139,7 +138,7 @@ public class SettingsController {
         model.addAttribute("tags", tags.stream().map(Tag::getTitle).collect(Collectors.toList()));
         List<String> allTags = tagRepository.findAll().stream().map(Tag::getTitle).toList();
         model.addAttribute("whitelist", objectMapper.writeValueAsString(allTags));
-        return "settings/tags";
+        return TAG_VIEW;
     }
 
     @PostMapping(value = {"/tags/add"})
@@ -171,7 +170,7 @@ public class SettingsController {
         model.addAttribute("zones", zoneList);
         List<String> whitlist = zoneService.tagifyZonesToString();
         model.addAttribute("whitelist", objectMapper.writeValueAsString(whitlist));
-        return "settings/zones";
+        return ZONE_VIEW;
     }
 
     @PostMapping(value = {"/zones/add"})
