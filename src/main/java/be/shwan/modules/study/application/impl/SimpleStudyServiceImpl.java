@@ -41,7 +41,6 @@ public class SimpleStudyServiceImpl implements StudyService {
                 studyRequestDto.fullDescription());
         Study newStudy = studyRepository.save(study);
         newStudy.addManager(account);
-        eventPublisher.publishEvent(new StudyCreatedEvent(newStudy));
         return newStudy;
     }
 
@@ -101,6 +100,7 @@ public class SimpleStudyServiceImpl implements StudyService {
             throw new IllegalStateException("이미 공개중인 스터디 입니다");
         }
         study.publish();
+        eventPublisher.publishEvent(new StudyCreatedEvent(study));
     }
 
     @Override

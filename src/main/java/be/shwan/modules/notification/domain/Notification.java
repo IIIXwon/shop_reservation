@@ -1,4 +1,4 @@
-package be.shwan.modules.notification;
+package be.shwan.modules.notification.domain;
 
 import be.shwan.modules.account.domain.Account;
 import jakarta.persistence.*;
@@ -28,9 +28,21 @@ public class Notification {
     @ManyToOne
     private Account account;
 
-    private LocalDateTime createLocalDateTime;
+    private LocalDateTime createdDateTime;
 
     @Enumerated(value = EnumType.STRING)
     private NotificationType notificationType;
 
+    public Notification(String title, String link, String message, Account account, NotificationType notificationType) {
+        this.title = title;
+        this.link = link;
+        this.message = message;
+        this.account = account;
+        createdDateTime = LocalDateTime.now();
+        this.notificationType = notificationType;
+    }
+
+    public void check() {
+        this.checked = true;
+    }
 }
