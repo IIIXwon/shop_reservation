@@ -1,9 +1,11 @@
 package be.shwan.modules.event.application.impl;
 
 import be.shwan.modules.account.domain.Account;
-import be.shwan.modules.event.application.EnrollService;
 import be.shwan.modules.event.application.EventService;
-import be.shwan.modules.event.domain.*;
+import be.shwan.modules.event.domain.Enrollment;
+import be.shwan.modules.event.domain.EnrollmentRepository;
+import be.shwan.modules.event.domain.Event;
+import be.shwan.modules.event.domain.EventRepository;
 import be.shwan.modules.event.dto.EventRequestDto;
 import be.shwan.modules.event.event.EnrollmentEvent;
 import be.shwan.modules.study.domain.Study;
@@ -22,7 +24,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SimpleEventServiceImpl implements EventService {
     private final EventRepository eventRepository;
-    private final EnrollService enrollService;
     private final EnrollmentRepository enrollmentRepository;
     private final ApplicationEventPublisher eventPublisher;
 
