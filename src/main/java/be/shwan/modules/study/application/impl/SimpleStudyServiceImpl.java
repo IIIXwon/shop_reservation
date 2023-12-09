@@ -8,6 +8,7 @@ import be.shwan.modules.study.dto.StudyDescriptionRequestDto;
 import be.shwan.modules.study.dto.StudyPathRequestDto;
 import be.shwan.modules.study.dto.StudyRequestDto;
 import be.shwan.modules.study.dto.StudyTitleRequestDto;
+import be.shwan.modules.study.event.StudyCreatedEvent;
 import be.shwan.modules.tag.application.TagService;
 import be.shwan.modules.tag.domain.Tag;
 import be.shwan.modules.tag.dto.RequestTagDto;
@@ -16,6 +17,7 @@ import be.shwan.modules.zone.domain.Zone;
 import be.shwan.modules.zone.dto.RequestZoneDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,13 +32,17 @@ public class SimpleStudyServiceImpl implements StudyService {
     private final StudyRepository studyRepository;
     private final TagService tagService;
     private final ZoneService zoneService;
+    private final ApplicationEventPublisher eventPublisher;
+
 
     @Override
     public Study newStudy(Account account, StudyRequestDto studyRequestDto) {
         Study study = new Study(studyRequestDto.path(), studyRequestDto.title(), studyRequestDto.shortDescription(),
                 studyRequestDto.fullDescription());
-        study.addManager(account);
-        return studyRepository.save(study);
+        Study newStudy = studyRepository.save(study);
+        newStudy.addManager(account);
+        eventPublisher.publishEvent(new StudyCreatedEvent(newStudy));
+        return newStudy;
     }
 
     @Transactional(readOnly = true)
