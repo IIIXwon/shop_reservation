@@ -10,23 +10,23 @@ import org.springframework.transaction.annotation.Transactional;
 public interface StudyRepository extends JpaRepository<Study, Long> {
     boolean existsByPath(String path);
 
-    @EntityGraph(value = "Study.withAll", type = EntityGraph.EntityGraphType.LOAD)
+    @EntityGraph(attributePaths = {"managers", "members", "tags", "zones"}, type = EntityGraph.EntityGraphType.LOAD)
     Study findByPath(String path);
 
-    @EntityGraph(value = "Study.tagAndManager", type = EntityGraph.EntityGraphType.FETCH)
+    @EntityGraph(attributePaths = {"tags", "managers"})
     Study findStudyWithTagByPath(String path);
 
-    @EntityGraph(value = "Study.zoneAndManager", type = EntityGraph.EntityGraphType.FETCH)
+    @EntityGraph(attributePaths = {"zones", "managers"})
     Study findStudyWithZoneByPath(String path);
 
-    @EntityGraph(value = "Study.manager", type = EntityGraph.EntityGraphType.FETCH)
+    @EntityGraph(attributePaths = {"managers"})
     Study findStudyWithManagerByPath(String path);
 
-    @EntityGraph(value = "Study.withMembersAndManagers", type = EntityGraph.EntityGraphType.FETCH)
+    @EntityGraph(attributePaths = {"members", "managers"})
     Study findStudyWithMembersAndManagersByPath(String path);
 
     Study findStudyOnlyByPath(String path);
 
-    @EntityGraph(value = "Study.withTagsAndZones", type = EntityGraph.EntityGraphType.FETCH)
+    @EntityGraph(attributePaths = {"tags", "zones"})
     Study findStudyWithTagsAndZonesById(Long id);
 }

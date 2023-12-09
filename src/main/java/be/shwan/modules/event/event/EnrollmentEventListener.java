@@ -1,20 +1,15 @@
-package be.shwan.modules.study.event;
+package be.shwan.modules.event.event;
 
 import be.shwan.infra.config.AppProperties;
 import be.shwan.infra.mail.application.EmailService;
 import be.shwan.infra.mail.dto.EmailMessage;
 import be.shwan.modules.account.domain.Account;
-import be.shwan.modules.account.domain.AccountPredicates;
-import be.shwan.modules.account.domain.AccountRepository;
 import be.shwan.modules.event.domain.Enrollment;
-import be.shwan.modules.event.domain.EnrollmentRepository;
 import be.shwan.modules.event.domain.Event;
-import be.shwan.modules.event.event.EnrollmentEvent;
 import be.shwan.modules.notification.domain.Notification;
-import be.shwan.modules.notification.domain.NotificationType;
 import be.shwan.modules.notification.domain.NotificationRepository;
+import be.shwan.modules.notification.domain.NotificationType;
 import be.shwan.modules.study.domain.Study;
-import be.shwan.modules.study.domain.StudyRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -24,55 +19,32 @@ import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-import java.util.HashSet;
-import java.util.Set;
-
 @Async
 @Slf4j
 @Component
 @Transactional
 @RequiredArgsConstructor
-public class StudyEventListener {
-
-    private final StudyRepository studyRepository;
-    private final AccountRepository accountRepository;
-    private final EmailService emailService;
-    private final TemplateEngine templateEngine;
+public class EnrollmentEventListener {
     private final AppProperties appProperties;
     private final NotificationRepository notificationRepository;
+    private final EmailService emailService;
+    private final TemplateEngine templateEngine;
 
     @EventListener
-    public void studyEventHandlerWithCreated(StudyCreatedEvent studyEvent) {
-        Study study = studyRepository.findStudyWithTagsAndZonesById(studyEvent.study().getId());
-        Iterable<Account> accounts = accountRepository.findAll(AccountPredicates.findByTagsAndZones(study.getTags(), study.getZones()));
-        accounts.forEach(account -> {
-            if (account.isStudyCreatedByEmail()) {
-                sendStudyEmail(account, study,
-                        "스터디가 변경되었습니다.", "스터디올레 '" + study.getTitle() + "' 스터디가 생겼습니다");
-            }
+    public void enrollmentEventHandler(EnrollmentEvent enrollmentEvent) {
+        Enrollment enrollment = enrollmentEvent.enrollment();
+        Account account = enrollment.getAccount();
+        Event event = enrollment.getEvent();
+        Study study = event.getStudy();
+        String accept = "스터디올레 '" + event.getTitle() + "' 모임에 참가 신청이 완료되었습니다.";
+        String reject = "스터디올레 '" + event.getTitle() + "' 모임에 참가 신청이 거절되었습니다.";
+        if (account.isStudyEnrollmentResultByEmail()) {
+            sendStudyEmail(account, study, enrollmentEvent.message(), enrollment.isAccepted() ? accept : reject);
+        }
 
-            if(account.isStudyCreatedByWeb()) {
-                createdNotification(account, study, study.getShortDescription(), NotificationType.STUDY_CREATED);
-            }
-        });
-    }
-
-    @EventListener
-    public void studyEventHandlerWithUpdated(StudyUpdatedEvent studyEvent) {
-        Study study = studyRepository.findStudyWithMembersAndManagersByPath(studyEvent.study().getPath());
-        Set<Account> accounts = new HashSet<>();
-        accounts.addAll(study.getManagers());
-        accounts.addAll(study.getMembers());
-        accounts.forEach(account -> {
-            if (account.isStudyUpdatedByEmail()) {
-                sendStudyEmail(account, study,
-                        studyEvent.message(),  "스터디올레 '" + study.getTitle() + "' 스터디에 새소식이 있습니다.");
-            }
-
-            if (account.isStudyUpdatedByWeb()) {
-                createdNotification(account, study, studyEvent.message(), NotificationType.STUDY_UPDATED);
-            }
-        });
+        if (account.isStudyEnrollmentResultByWeb()) {
+            createdNotification(account, study, enrollmentEvent.message(), NotificationType.EVENT_ENROLLMENT);
+        }
     }
 
     private void createdNotification(Account account, Study study, String message, NotificationType notificationType) {

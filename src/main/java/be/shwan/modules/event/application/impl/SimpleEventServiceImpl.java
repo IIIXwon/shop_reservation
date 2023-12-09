@@ -2,15 +2,14 @@ package be.shwan.modules.event.application.impl;
 
 import be.shwan.modules.account.domain.Account;
 import be.shwan.modules.event.application.EnrollService;
-import be.shwan.modules.event.domain.Enrollment;
-import be.shwan.modules.event.domain.EnrollmentRepository;
 import be.shwan.modules.event.application.EventService;
-import be.shwan.modules.event.domain.Event;
-import be.shwan.modules.event.domain.EventRepository;
-import be.shwan.modules.event.domain.EventType;
+import be.shwan.modules.event.domain.*;
 import be.shwan.modules.event.dto.EventRequestDto;
+import be.shwan.modules.event.event.EnrollmentEvent;
 import be.shwan.modules.study.domain.Study;
+import be.shwan.modules.study.event.StudyUpdatedEvent;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,27 +24,7 @@ public class SimpleEventServiceImpl implements EventService {
     private final EventRepository eventRepository;
     private final EnrollService enrollService;
     private final EnrollmentRepository enrollmentRepository;
-
-    @Override
-    public void enrollEvent(Event event, Account account, Study study) {
-        if(validAccount(account, study)) {
-            throw new AccessDeniedException("모임에 참가 할 수 없습니다.");
-        }
-
-        if(study.updatable()) {
-            throw new AccessDeniedException("모임에 참가 할 수 없습니다.");
-        }
-
-        Enrollment enrollment = new Enrollment(account, event);
-        if (event.getEventType().equals(EventType.FCFS)) {
-            event.enroll(enrollment);
-            enrollService.enroll(enrollment);
-        }
-
-        if (event.getEventType().equals(EventType.CONFIRMATIVE)) {
-
-        }
-    }
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public Enrollment enrollEvent(Event event, Account account) throws IllegalAccessException {
@@ -55,26 +34,6 @@ public class SimpleEventServiceImpl implements EventService {
             return enrollmentRepository.save(enrollment);
         }
         throw new IllegalAccessException("잘못된 접근입니다");
-    }
-
-    @Override
-    public void leaveEvent(Event event, Account account, Study study) {
-        if(validAccount(account, study)) {
-            throw new AccessDeniedException("모임 참가취소를 할 수 없습니다.");
-        }
-
-        if(study.updatable()) {
-            throw new AccessDeniedException("모임 참가취소를 할 수 없습니다.");
-        }
-
-        if (event.getEventType().equals(EventType.FCFS)) {
-            event.leaveEnrollByFCFS(event, account);
-            enrollService.leaveEnroll(event, account);
-        }
-
-        if (event.getEventType().equals(EventType.CONFIRMATIVE)) {
-
-        }
     }
 
     @Override
@@ -96,7 +55,9 @@ public class SimpleEventServiceImpl implements EventService {
         }
 
         Event event = new Event(account, study, eventRequestDto);
-        return eventRepository.save(event);
+        Event savedEvent = eventRepository.save(event);
+        eventPublisher.publishEvent(new StudyUpdatedEvent(study, "스터디 모임이 생성되었습니다."));
+        return savedEvent;
     }
 
     @Override
@@ -115,6 +76,7 @@ public class SimpleEventServiceImpl implements EventService {
 
         event.update(eventRequestDto);
         event.acceptNextWaitingEnrollmentList();
+        eventPublisher.publishEvent(new StudyUpdatedEvent(study, "스터디 모임이 변경 되었습니다."));
     }
 
     @Override
@@ -124,32 +86,19 @@ public class SimpleEventServiceImpl implements EventService {
         }
 
         eventRepository.delete(event);
-    }
-
-    @Override
-    public void acceptEnrollment(Event event, Long enrollmentId, Account account) {
-        if(event.isAbleToAcceptEnrollment()) {
-            Enrollment enrollment = enrollmentRepository.findById(enrollmentId).orElseThrow();
-            enrollment.accept();
-        }
+        eventPublisher.publishEvent(new StudyUpdatedEvent(event.getStudy(), "스터디 모임이 취소 되었습니다."));
     }
 
     @Override
     public void acceptEnrollment(Event event, Enrollment enrollment) {
         event.accept(enrollment);
-    }
-
-    @Override
-    public void rejectEnrollment(Event event, Long enrollmentId, Account account) {
-        Enrollment enrollment = enrollmentRepository.findById(enrollmentId).orElseThrow();
-        if(event.isAbleToRejectEnrollment(enrollment)) {
-            enrollment.reject();
-        }
+        eventPublisher.publishEvent(new EnrollmentEvent(enrollment, event.getTitle() + "에 참가 신청 완료되었습니다."));
     }
 
     @Override
     public void rejectEnrollment(Event event, Enrollment enrollment) {
         event.reject(enrollment);
+        eventPublisher.publishEvent(new EnrollmentEvent(enrollment, event.getTitle() + "에 참가 신청이 거절되었습니다."));
     }
 
     @Override

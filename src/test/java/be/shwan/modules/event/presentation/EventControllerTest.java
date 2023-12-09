@@ -2,6 +2,7 @@ package be.shwan.modules.event.presentation;
 
 import be.shwan.infra.AbstractContainerBaseTest;
 import be.shwan.infra.MockMvcTest;
+import be.shwan.infra.mail.dto.EmailMessage;
 import be.shwan.modules.account.AccountFactory;
 import be.shwan.modules.account.WithAccount;
 import be.shwan.modules.account.domain.Account;
@@ -11,16 +12,21 @@ import be.shwan.modules.event.domain.Enrollment;
 import be.shwan.modules.event.domain.Event;
 import be.shwan.modules.event.domain.EventType;
 import be.shwan.modules.event.dto.EventRequestDto;
+import be.shwan.modules.event.event.EnrollmentEvent;
+import be.shwan.modules.event.event.EnrollmentEventListener;
 import be.shwan.modules.study.StudyFactory;
 import be.shwan.modules.study.domain.Study;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.then;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -44,6 +50,9 @@ class EventControllerTest extends AbstractContainerBaseTest {
 
     @Autowired
     EventService eventService;
+
+    @MockBean
+    EnrollmentEventListener eventListener;
 
     @WithAccount(ADMIN)
     @DisplayName("[GET] /study/{path}/new-event, 모임 생성 페이지")
@@ -254,6 +263,8 @@ class EventControllerTest extends AbstractContainerBaseTest {
 
         Event byId = eventFactory.findEventById(event.getId());
         assertEquals(1, byId.getEnrollments().size());
+
+        then(eventListener).should().enrollmentEventHandler(any(EnrollmentEvent.class));
     }
 
     @WithAccount(ADMIN)
@@ -282,5 +293,7 @@ class EventControllerTest extends AbstractContainerBaseTest {
 
         Enrollment newEnrollment = event.getEnrollments().get(0);
         assertFalse(newEnrollment.isAccepted());
+
+        then(eventListener).should().enrollmentEventHandler(any(EnrollmentEvent.class));
     }
 }

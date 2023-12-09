@@ -21,17 +21,9 @@ public interface EventService {
 
     Event getEventWithEnrollment(Long id);
 
-    void enrollEvent(Event event, Account account, Study study);
-
-    void leaveEvent(Event event, Account account, Study study);
-
     Enrollment enrollEvent(Event event, Account account) throws IllegalAccessException;
 
     void leaveEvent(Event event, Account account);
-
-    void acceptEnrollment(Event event, Long enrollmentId, Account account);
-
-    void rejectEnrollment(Event event, Long enrollmentId, Account account);
 
     void acceptEnrollment(Event event, Enrollment enrollment);
 

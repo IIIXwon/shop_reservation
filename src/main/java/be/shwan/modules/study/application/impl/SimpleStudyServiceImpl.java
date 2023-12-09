@@ -8,6 +8,7 @@ import be.shwan.modules.study.dto.StudyDescriptionRequestDto;
 import be.shwan.modules.study.dto.StudyPathRequestDto;
 import be.shwan.modules.study.dto.StudyRequestDto;
 import be.shwan.modules.study.dto.StudyTitleRequestDto;
+import be.shwan.modules.study.event.StudyUpdatedEvent;
 import be.shwan.modules.study.event.StudyCreatedEvent;
 import be.shwan.modules.tag.application.TagService;
 import be.shwan.modules.tag.domain.Tag;
@@ -109,6 +110,7 @@ public class SimpleStudyServiceImpl implements StudyService {
             throw new IllegalStateException("이미 종료된 스터디 입니다");
         }
         study.close();
+        eventPublisher.publishEvent(new StudyUpdatedEvent(study, "스터디가 종료 되었습니다."));
     }
 
     @Override
@@ -121,6 +123,7 @@ public class SimpleStudyServiceImpl implements StudyService {
             throw new IllegalStateException("팀원 모집은 1시간에 한번 변경할 수 있습니다.");
         }
         study.startRecruit();
+        eventPublisher.publishEvent(new StudyUpdatedEvent(study, "팀원 모집이 시작 되었습니다."));
     }
 
     @Override
@@ -133,6 +136,7 @@ public class SimpleStudyServiceImpl implements StudyService {
             throw new IllegalStateException("팀원 모집은 1시간에 한번 변경할 수 있습니다.");
         }
         study.stopRecruit();
+        eventPublisher.publishEvent(new StudyUpdatedEvent(study, "팀원 모집이 종료 되었습니다."));
     }
 
     @Override
@@ -234,6 +238,7 @@ public class SimpleStudyServiceImpl implements StudyService {
     @Override
     public void updateDescription(Study study, StudyDescriptionRequestDto studyDescriptionRequestDto) {
         study.updateDescription(studyDescriptionRequestDto);
+        eventPublisher.publishEvent(new StudyUpdatedEvent(study, "스터디가 소개가 변경되었습니다."));
     }
 
     private void existStudy(Study study) {

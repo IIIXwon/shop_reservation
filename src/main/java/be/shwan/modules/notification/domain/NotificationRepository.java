@@ -12,6 +12,7 @@ import java.util.List;
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
     long countByAccountAndChecked(Account account, boolean checked);
 
+    @Transactional
     void deleteByAccountAndChecked(Account account, boolean checked);
 
     List<Notification> findByAccountOrderByCreatedDateTime(Account account);
