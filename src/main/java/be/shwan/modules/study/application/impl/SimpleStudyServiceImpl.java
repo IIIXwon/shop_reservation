@@ -8,8 +8,8 @@ import be.shwan.modules.study.dto.StudyDescriptionRequestDto;
 import be.shwan.modules.study.dto.StudyPathRequestDto;
 import be.shwan.modules.study.dto.StudyRequestDto;
 import be.shwan.modules.study.dto.StudyTitleRequestDto;
-import be.shwan.modules.study.event.StudyUpdatedEvent;
 import be.shwan.modules.study.event.StudyCreatedEvent;
+import be.shwan.modules.study.event.StudyUpdatedEvent;
 import be.shwan.modules.tag.application.TagService;
 import be.shwan.modules.tag.domain.Tag;
 import be.shwan.modules.tag.dto.RequestTagDto;
@@ -250,6 +250,17 @@ public class SimpleStudyServiceImpl implements StudyService {
     private void checkManager(Account account, Study study) {
         if (!study.isManager(account)) {
             throw new AccessDeniedException("해당 기능을 사용할 수 없습니다.");
+        }
+    }
+
+    @Override
+    public void generateTestdatas(Account account) {
+        for (int i = 0; i < 31; i ++) {
+            StudyRequestDto requestDto = new StudyRequestDto("test" + i, "테스트 스터디" + i,
+                    "테스트용 스터디입니다.", "테스트용 스터디 입니다.");
+            Study study = newStudy(account, requestDto);
+            study.publish();
+            studyRepository.save(study);
         }
     }
 }

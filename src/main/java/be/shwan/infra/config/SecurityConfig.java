@@ -1,6 +1,7 @@
 package be.shwan.infra.config;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.security.StaticResourceLocation;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -16,6 +17,9 @@ import org.springframework.security.web.authentication.rememberme.JdbcTokenRepos
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 
 import javax.sql.DataSource;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @EnableMethodSecurity
@@ -41,9 +45,9 @@ public class SecurityConfig {
                         .requestMatchers("/", "/login", "/sign-up", "/check-email-token",
                                 "/email-login", "/check-email-login", "/login-by-email").permitAll()
                         .requestMatchers(HttpMethod.GET, "/profile/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/search/study").permitAll()
                         // web
-                        .requestMatchers(HttpMethod.GET, "/images/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/node_modules/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/images/**", "/node_modules/**").permitAll()
                         .anyRequest().authenticated()
         );
 
@@ -71,5 +75,11 @@ public class SecurityConfig {
         jdbcTokenRepository.setDataSource(dataSource);
 
         return jdbcTokenRepository;
+    }
+
+    private List<String> getResourcePath() {
+        return Arrays.stream(StaticResourceLocation.values())
+                .flatMap(StaticResourceLocation::getPatterns)
+                .collect(Collectors.toList());
     }
 }

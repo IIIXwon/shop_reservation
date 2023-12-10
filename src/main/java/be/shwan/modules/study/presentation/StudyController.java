@@ -82,4 +82,10 @@ public class StudyController {
         studyService.leave(study, account);
         return "redirect:/study/" + URLEncoder.encode(path, StandardCharsets.UTF_8);
     }
+
+    @GetMapping(value = {"/study/data"})
+    public String testData(@CurrentUser Account account) {
+        studyService.generateTestdatas(account);
+        return "redirect:/";
+    }
 }

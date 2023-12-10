@@ -59,4 +59,6 @@ public interface StudyService {
     void leave(Study study, Account account);
 
     Study getStudyToEnroll(String path);
+
+    void generateTestdatas(Account account);
 }
