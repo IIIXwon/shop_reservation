@@ -2,7 +2,6 @@ package be.shwan.modules.account.domain;
 
 import be.shwan.modules.tag.domain.Tag;
 import be.shwan.modules.zone.domain.Zone;
-import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
 
 import java.util.Set;

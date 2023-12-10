@@ -7,6 +7,8 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Repository
 @Transactional(readOnly = true)
 public interface StudyRepository extends JpaRepository<Study, Long>, StudyRepositoryExtension {
@@ -31,4 +33,6 @@ public interface StudyRepository extends JpaRepository<Study, Long>, StudyReposi
 
     @EntityGraph(attributePaths = {"tags", "zones"})
     Study findStudyWithTagsAndZonesById(Long id);
+
+    List<Study> findFirst9ByPublishedAndClosedOrderByPublishedDateTimeDesc(boolean published, boolean closed);
 }

@@ -7,6 +7,9 @@ import be.shwan.modules.study.domain.StudyRepositoryExtension;
 import be.shwan.modules.tag.domain.QTag;
 import be.shwan.modules.zone.domain.QZone;
 import com.querydsl.core.QueryResults;
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.JPQLQuery;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -31,11 +34,21 @@ public class StudyRepositoryExtensionImpl extends QuerydslRepositorySupport impl
                 .or(study.published.isTrue().and(study.zones.any().localNameOfCity.containsIgnoreCase(keyword)))))
                 .leftJoin(study.tags, QTag.tag).fetchJoin()
                 .leftJoin(study.zones, QZone.zone).fetchJoin()
-                .leftJoin(study.members, QAccount.account).fetchJoin()
                 .distinct()
                 ;
         JPQLQuery<Study> pageableQuery = Objects.requireNonNull(getQuerydsl()).applyPagination(pageable, query);
         QueryResults<Study> studyQueryResults = pageableQuery.fetchResults();
         return new PageImpl<>(studyQueryResults.getResults(), pageable, studyQueryResults.getTotal());
+    }
+
+    @Override
+    public List<Study> findDefault() {
+        QStudy study = QStudy.study;
+        JPQLQuery<Study> query = from(study).where(study.published.isTrue().and(study.closed.isFalse()))
+                .leftJoin(study.tags, QTag.tag).fetchJoin()
+                .leftJoin(study.zones, QZone.zone).fetchJoin()
+                .orderBy(study.publishedDateTime.desc())
+                .limit(9L);
+        return query.fetch();
     }
 }

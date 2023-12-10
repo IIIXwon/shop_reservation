@@ -83,6 +83,7 @@ public class StudyController {
         return "redirect:/study/" + URLEncoder.encode(path, StandardCharsets.UTF_8);
     }
 
+    @Deprecated
     @GetMapping(value = {"/study/data"})
     public String testData(@CurrentUser Account account) {
         studyService.generateTestdatas(account);
