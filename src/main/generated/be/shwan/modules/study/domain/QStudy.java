@@ -32,6 +32,8 @@ public class QStudy extends EntityPathBase<Study> {
 
     public final SetPath<be.shwan.modules.account.domain.Account, be.shwan.modules.account.domain.QAccount> managers = this.<be.shwan.modules.account.domain.Account, be.shwan.modules.account.domain.QAccount>createSet("managers", be.shwan.modules.account.domain.Account.class, be.shwan.modules.account.domain.QAccount.class, PathInits.DIRECT2);
 
+    public final NumberPath<Integer> memberCount = createNumber("memberCount", Integer.class);
+
     public final SetPath<be.shwan.modules.account.domain.Account, be.shwan.modules.account.domain.QAccount> members = this.<be.shwan.modules.account.domain.Account, be.shwan.modules.account.domain.QAccount>createSet("members", be.shwan.modules.account.domain.Account.class, be.shwan.modules.account.domain.QAccount.class, PathInits.DIRECT2);
 
     public final StringPath path = createString("path");

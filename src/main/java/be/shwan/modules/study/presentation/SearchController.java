@@ -28,6 +28,8 @@ public class SearchController {
         model.addAttribute("account", account == null ? SecurityContextHolder.getContext().getAuthentication().getPrincipal() : account);
         model.addAttribute("studyPage", studyList);
         model.addAttribute("keyword", keyword);
+        model.addAttribute("sortProperty",
+                pageable.getSort().toString().equals("memberCount") ? "memberCount" : "publishedDateTime");
         return STUDY_SEARCH_VIEW;
     }
 }

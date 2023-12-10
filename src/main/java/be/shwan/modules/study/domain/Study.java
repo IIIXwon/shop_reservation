@@ -66,6 +66,8 @@ public class Study {
 
     private boolean useBanner;
 
+    private int memberCount;
+
     public Study(String path, String title, String shortDescription, String fullDescription) {
         this.path = path;
         this.title = title;
@@ -162,10 +164,12 @@ public class Study {
 
     public void join(Account account) {
         members.add(account);
+        memberCount++;
     }
 
     public void leave(Account account) {
         members.remove(account);
+        memberCount--;
     }
 
     public String getEncodePath() {
