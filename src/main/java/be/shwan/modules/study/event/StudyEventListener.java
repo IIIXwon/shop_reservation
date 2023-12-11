@@ -13,6 +13,7 @@ import be.shwan.modules.study.domain.Study;
 import be.shwan.modules.study.domain.StudyRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -36,6 +37,7 @@ public class StudyEventListener {
     private final TemplateEngine templateEngine;
     private final AppProperties appProperties;
     private final NotificationRepository notificationRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @EventListener
     public void studyEventHandlerWithCreated(StudyCreatedEvent studyEvent) {
@@ -101,6 +103,8 @@ public class StudyEventListener {
 
     private void sendEmail(String to, String subject, String message) {
         EmailMessage emailMessage = new EmailMessage(to, subject, message);
-        emailService.sendEmail(emailMessage);
+//        emailService.sendEmail(emailMessage);
+        eventPublisher.publishEvent(emailMessage);
+
     }
 }

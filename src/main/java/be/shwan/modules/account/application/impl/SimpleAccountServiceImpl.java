@@ -8,10 +8,12 @@ import be.shwan.modules.account.domain.Account;
 import be.shwan.modules.account.domain.AccountRepository;
 import be.shwan.modules.account.domain.UserAccount;
 import be.shwan.modules.account.dto.*;
+import be.shwan.modules.account.event.EmailCreateEvent;
 import be.shwan.modules.tag.domain.Tag;
 import be.shwan.modules.zone.domain.Zone;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -38,6 +40,7 @@ public class SimpleAccountServiceImpl implements AccountService {
     private final EmailService emailService;
     private final TemplateEngine templateEngine;
     private final AppProperties appProperties;
+    private final ApplicationEventPublisher eventPublisher;
 
     private Account signUp(SignUpFormDto requestDto) {
         Account account = new Account(requestDto.nickname(), passwordEncoder.encode(requestDto.password()),
@@ -126,8 +129,9 @@ public class SimpleAccountServiceImpl implements AccountService {
         String process = htmlEmailTemplate(account, linkMessage);
         EmailMessage emailMessage = new EmailMessage(account.getEmail(), "스터디올레 회원 가입 인증",
                 process);
-        emailService.sendEmail(emailMessage);
         account.sendEmailCheckToken();
+        eventPublisher.publishEvent(new EmailCreateEvent(emailMessage));
+//        emailService.sendEmail(emailMessage);
     }
 
     @Override
@@ -136,7 +140,8 @@ public class SimpleAccountServiceImpl implements AccountService {
         String linkMessage = "/login-by-email?token=" + account.getEmailLoginToken() + "&email=" + account.getEmail();
         String htmlEmailTemplate = htmlEmailTemplate(account, linkMessage);
         EmailMessage emailMessage = new EmailMessage(account.getEmail(), "스터디올레 이메일 로그인 안내", htmlEmailTemplate);
-        emailService.sendEmail(emailMessage);
+        eventPublisher.publishEvent(new EmailCreateEvent(emailMessage));
+//        emailService.sendEmail(emailMessage);
     }
 
     private String htmlEmailTemplate(Account account, String linkMessage) {

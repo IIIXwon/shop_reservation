@@ -4,6 +4,7 @@ import be.shwan.infra.config.AppProperties;
 import be.shwan.infra.mail.application.EmailService;
 import be.shwan.infra.mail.dto.EmailMessage;
 import be.shwan.modules.account.domain.Account;
+import be.shwan.modules.account.event.EmailCreateEvent;
 import be.shwan.modules.event.domain.Enrollment;
 import be.shwan.modules.event.domain.Event;
 import be.shwan.modules.notification.domain.Notification;
@@ -12,6 +13,7 @@ import be.shwan.modules.notification.domain.NotificationType;
 import be.shwan.modules.study.domain.Study;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -29,6 +31,7 @@ public class EnrollmentEventListener {
     private final NotificationRepository notificationRepository;
     private final EmailService emailService;
     private final TemplateEngine templateEngine;
+    private final ApplicationEventPublisher eventPublisher;
 
     @EventListener
     public void enrollmentEventHandler(EnrollmentEvent enrollmentEvent) {
@@ -77,6 +80,7 @@ public class EnrollmentEventListener {
 
     private void sendEmail(String to, String subject, String message) {
         EmailMessage emailMessage = new EmailMessage(to, subject, message);
-        emailService.sendEmail(emailMessage);
+        eventPublisher.publishEvent(new EmailCreateEvent(emailMessage));
+//        emailService.sendEmail(emailMessage);
     }
 }
