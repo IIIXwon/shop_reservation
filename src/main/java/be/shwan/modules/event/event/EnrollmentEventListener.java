@@ -1,10 +1,8 @@
 package be.shwan.modules.event.event;
 
 import be.shwan.infra.config.AppProperties;
-import be.shwan.infra.mail.application.EmailService;
 import be.shwan.infra.mail.dto.EmailMessage;
 import be.shwan.modules.account.domain.Account;
-import be.shwan.modules.account.event.EmailCreateEvent;
 import be.shwan.modules.event.domain.Enrollment;
 import be.shwan.modules.event.domain.Event;
 import be.shwan.modules.notification.domain.Notification;
@@ -29,7 +27,6 @@ import org.thymeleaf.context.Context;
 public class EnrollmentEventListener {
     private final AppProperties appProperties;
     private final NotificationRepository notificationRepository;
-    private final EmailService emailService;
     private final TemplateEngine templateEngine;
     private final ApplicationEventPublisher eventPublisher;
 
@@ -80,7 +77,6 @@ public class EnrollmentEventListener {
 
     private void sendEmail(String to, String subject, String message) {
         EmailMessage emailMessage = new EmailMessage(to, subject, message);
-        eventPublisher.publishEvent(new EmailCreateEvent(emailMessage));
-//        emailService.sendEmail(emailMessage);
+        eventPublisher.publishEvent(new EnrollementCreateEvent(emailMessage));
     }
 }

@@ -9,6 +9,7 @@ import be.shwan.modules.event.domain.EventRepository;
 import be.shwan.modules.event.dto.EventRequestDto;
 import be.shwan.modules.event.event.EnrollmentEvent;
 import be.shwan.modules.study.domain.Study;
+import be.shwan.modules.study.event.StudyCreatedEvent;
 import be.shwan.modules.study.event.StudyUpdatedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -57,7 +58,7 @@ public class SimpleEventServiceImpl implements EventService {
 
         Event event = new Event(account, study, eventRequestDto);
         Event savedEvent = eventRepository.save(event);
-        eventPublisher.publishEvent(new StudyUpdatedEvent(study, "스터디 모임이 생성되었습니다."));
+        eventPublisher.publishEvent(new StudyCreatedEvent(savedEvent.getStudy()));
         return savedEvent;
     }
 

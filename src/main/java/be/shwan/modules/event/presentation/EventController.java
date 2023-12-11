@@ -26,8 +26,6 @@ public class EventController {
     private final EventService eventService;
     private final EventRepository eventRepository;
     private final StudyService studyService;
-    private final EnrollmentRepository enrollmentRepository;
-
 
     private final EventRequestDtoValidator eventRequestDtoValidator;
     static final String EVENT_FORM_VIEW = "events/form";

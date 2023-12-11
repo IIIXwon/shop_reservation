@@ -9,28 +9,30 @@ import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.sli
 
 @AnalyzeClasses(packagesOf = ReservationApplication.class)
 public class PackageDependencyTests {
-    private final String STUDY = "..modules.study..";
-    private final String EVENT = "..modules.event..";
-
-    private final String ACCOUNT = "..modules.account..";
-    private final String TAG = "..modules.tag..";
-    private final String ZONE = "..modules.zone..";
+    private static final String STUDY = "..modules.study..";
+    private static final String EVENT = "..modules.event..";
+    private static final String ACCOUNT = "..modules.account..";
+    private static final String TAG = "..modules.tag..";
+    private static final String ZONE = "..modules.zone..";
+    private static final String MAIN = "..modules.main..";
 
     @ArchTest
     ArchRule modulesPackageRule = classes().that().resideInAPackage("be.shwan.modules..")
             .should().onlyBeAccessed().byClassesThat()
             .resideInAnyPackage("be.shwan.modules..");
-    @ArchTest
-    ArchRule studyPackageRules = classes().that().resideInAPackage(STUDY).should().onlyBeAccessed().byClassesThat()
-            .resideInAnyPackage(STUDY, EVENT);
 
     @ArchTest
-    ArchRule eventPackageRules = classes().that().resideInAPackage(EVENT).should().accessClassesThat()
-            .resideInAnyPackage(STUDY, EVENT, ACCOUNT);
+    ArchRule studyPackageRule = classes().that().resideInAPackage(STUDY)
+            .should().onlyBeAccessed().byClassesThat()
+            .resideInAnyPackage(STUDY, EVENT, MAIN);
 
     @ArchTest
-    ArchRule accountPackageRules = classes().that().resideInAPackage(ACCOUNT).should().accessClassesThat()
-            .resideInAnyPackage(ACCOUNT, ZONE, TAG);
+    ArchRule eventPackageRule = classes().that().resideInAPackage(EVENT)
+            .should().accessClassesThat().resideInAnyPackage(STUDY, ACCOUNT, EVENT);
+
+    @ArchTest
+    ArchRule accountPackageRule = classes().that().resideInAPackage(ACCOUNT)
+            .should().accessClassesThat().resideInAnyPackage(TAG, ZONE, ACCOUNT);
 
     @ArchTest
     ArchRule cycleCheck = slices().matching("be.shwan.modules.(*)..")
