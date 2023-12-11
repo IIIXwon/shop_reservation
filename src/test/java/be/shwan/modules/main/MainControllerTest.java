@@ -3,6 +3,7 @@ package be.shwan.modules.main;
 import be.shwan.infra.AbstractContainerBaseTest;
 import be.shwan.infra.MockMvcTest;
 import be.shwan.modules.account.AccountFactory;
+import be.shwan.modules.account.WithAccount;
 import be.shwan.modules.account.domain.Account;
 import be.shwan.modules.study.StudyFactory;
 import be.shwan.modules.study.application.StudyService;
@@ -42,7 +43,7 @@ class MainControllerTest extends AbstractContainerBaseTest {
     @Autowired
     StudyFactory studyFactory;
 
-    @DisplayName("[GET] /, 메인페이지 접근")
+    @DisplayName("[GET] /, 비 로그인 메인페이지 접근")
     @Test
     void mainPage() throws Exception {
         Account account = accountFactory.findAccountByNickname(AccountFactory.DEFAULT_ACCOUNT_NAME);
@@ -51,12 +52,24 @@ class MainControllerTest extends AbstractContainerBaseTest {
         mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("studyList"))
-                .andExpect(view().name(MainController.MAIN_VEIW))
+                .andExpect(view().name(MainController.MAIN_VIEW))
                 .andExpect(unauthenticated())
         ;
 
         List<Study> studyList = studyRepository.findDefault();
         assertEquals(9, studyList.size());
+    }
+
+    @WithAccount(AccountFactory.DEFAULT_ACCOUNT_NAME)
+    @DisplayName("[GET] /, 로그인 메인페이지 접근")
+    @Test
+    void mainPageWithLogin() throws Exception {
+        mockMvc.perform(get("/"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("account", "enrollmentList", "studyManagerOf", "studyMemberOf", "studyList"))
+                .andExpect(view().name(MainController.LOGIN_MAIN_VIEW))
+                .andExpect(authenticated().withUsername(AccountFactory.DEFAULT_ACCOUNT_NAME))
+        ;
     }
 
     @DisplayName("[POST] /login, nickname login 성공")

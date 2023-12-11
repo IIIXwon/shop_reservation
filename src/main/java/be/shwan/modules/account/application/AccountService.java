@@ -1,12 +1,7 @@
 package be.shwan.modules.account.application;
 
 import be.shwan.modules.account.domain.Account;
-import be.shwan.modules.account.dto.AccountResponseRecord;
-import be.shwan.modules.account.dto.SignUpFormDto;
-import be.shwan.modules.account.dto.NicknameForm;
-import be.shwan.modules.account.dto.Notifications;
-import be.shwan.modules.account.dto.PasswordForm;
-import be.shwan.modules.account.dto.ProfileInfo;
+import be.shwan.modules.account.dto.*;
 import be.shwan.modules.tag.domain.Tag;
 import be.shwan.modules.zone.domain.Zone;
 import org.springframework.security.core.userdetails.UserDetailsService;

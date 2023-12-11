@@ -1,15 +1,13 @@
 package be.shwan.modules.study.domain.impl;
 
-import be.shwan.modules.account.domain.QAccount;
 import be.shwan.modules.study.domain.QStudy;
 import be.shwan.modules.study.domain.Study;
 import be.shwan.modules.study.domain.StudyRepositoryExtension;
 import be.shwan.modules.tag.domain.QTag;
+import be.shwan.modules.tag.domain.Tag;
 import be.shwan.modules.zone.domain.QZone;
+import be.shwan.modules.zone.domain.Zone;
 import com.querydsl.core.QueryResults;
-import com.querydsl.core.types.Order;
-import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.JPQLQuery;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -18,6 +16,7 @@ import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public class StudyRepositoryExtensionImpl extends QuerydslRepositorySupport implements StudyRepositoryExtension {
 
@@ -48,7 +47,23 @@ public class StudyRepositoryExtensionImpl extends QuerydslRepositorySupport impl
                 .leftJoin(study.tags, QTag.tag).fetchJoin()
                 .leftJoin(study.zones, QZone.zone).fetchJoin()
                 .orderBy(study.publishedDateTime.desc())
-                .limit(9L);
+                .distinct()
+                .limit(9L)
+        ;
+        return query.fetch();
+    }
+
+    @Override
+    public List<Study> findStudyListWithTagsAndZonesByAccount(Set<Tag> tags, Set<Zone> zones) {
+        QStudy study = QStudy.study;
+        JPQLQuery<Study> query = from(study).where(study.published.isTrue().and(study.closed.isFalse())
+                        .and(study.tags.any().in(tags).or(study.zones.any().in(zones))))
+                .leftJoin(study.tags, QTag.tag).fetchJoin()
+                .leftJoin(study.zones, QZone.zone).fetchJoin()
+                .orderBy(study.publishedDateTime.desc())
+                .distinct()
+                .limit(9L)
+        ;
         return query.fetch();
     }
 }

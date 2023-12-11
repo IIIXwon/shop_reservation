@@ -1,6 +1,6 @@
 package be.shwan.modules.study.domain;
 
-import com.querydsl.core.types.Predicate;
+import be.shwan.modules.account.domain.Account;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
@@ -11,7 +11,8 @@ import java.util.List;
 
 @Repository
 @Transactional(readOnly = true)
-public interface StudyRepository extends JpaRepository<Study, Long>, StudyRepositoryExtension {
+public interface StudyRepository extends JpaRepository<Study, Long>, StudyRepositoryExtension,
+        QuerydslPredicateExecutor<Study> {
     boolean existsByPath(String path);
 
     @EntityGraph(attributePaths = {"managers", "members", "tags", "zones"}, type = EntityGraph.EntityGraphType.LOAD)
@@ -34,5 +35,7 @@ public interface StudyRepository extends JpaRepository<Study, Long>, StudyReposi
     @EntityGraph(attributePaths = {"tags", "zones"})
     Study findStudyWithTagsAndZonesById(Long id);
 
-    List<Study> findFirst9ByPublishedAndClosedOrderByPublishedDateTimeDesc(boolean published, boolean closed);
+    List<Study> findFirst5ByManagersContainingAndClosedOrderByPublishedDateTimeDesc(Account account, boolean closed);
+
+    List<Study> findFirst5ByMembersContainingAndClosedOrderByPublishedDateTimeDesc(Account account, boolean closed);
 }

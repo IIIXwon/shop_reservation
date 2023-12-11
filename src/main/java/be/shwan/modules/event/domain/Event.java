@@ -16,9 +16,6 @@ import java.util.List;
 @NamedEntityGraph(name = "EventAll.withEnrollments", attributeNodes = {
         @NamedAttributeNode("enrollments")
 })
-@NamedEntityGraph(name = "Event.withEnrollments", attributeNodes = {
-        @NamedAttributeNode("enrollments")
-})
 @Entity
 @EqualsAndHashCode(of = "id")
 @Getter

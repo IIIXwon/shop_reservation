@@ -2,12 +2,8 @@ package be.shwan.modules.event.presentation;
 
 import be.shwan.modules.account.domain.Account;
 import be.shwan.modules.account.domain.CurrentUser;
-import be.shwan.modules.event.domain.Enrollment;
-import be.shwan.modules.event.domain.EnrollmentRepository;
 import be.shwan.modules.event.application.EventService;
-import be.shwan.modules.event.domain.Event;
-import be.shwan.modules.event.domain.EventRepository;
-import be.shwan.modules.event.domain.EventType;
+import be.shwan.modules.event.domain.*;
 import be.shwan.modules.event.dto.EventRequestDto;
 import be.shwan.modules.event.dto.EventRequestDtoValidator;
 import be.shwan.modules.study.application.StudyService;

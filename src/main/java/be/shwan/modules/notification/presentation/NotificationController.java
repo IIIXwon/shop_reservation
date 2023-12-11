@@ -5,7 +5,6 @@ import be.shwan.modules.account.domain.CurrentUser;
 import be.shwan.modules.notification.application.NotificationService;
 import be.shwan.modules.notification.domain.Notification;
 import be.shwan.modules.notification.domain.NotificationRepository;
-import be.shwan.modules.notification.domain.NotificationType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

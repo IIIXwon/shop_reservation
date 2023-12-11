@@ -28,8 +28,12 @@ public class SearchController {
         model.addAttribute("account", account == null ? SecurityContextHolder.getContext().getAuthentication().getPrincipal() : account);
         model.addAttribute("studyPage", studyList);
         model.addAttribute("keyword", keyword);
-        model.addAttribute("sortProperty",
-                pageable.getSort().toString().equals("memberCount") ? "memberCount" : "publishedDateTime");
+        model.addAttribute("sortProperty", getDefaultSortCondition(pageable));
         return STUDY_SEARCH_VIEW;
+    }
+
+    private String getDefaultSortCondition(Pageable pageable) {
+        String property = pageable.getSort().toList().get(0).getProperty();
+        return property.isEmpty() ? "publishedDateTime": property;
     }
 }

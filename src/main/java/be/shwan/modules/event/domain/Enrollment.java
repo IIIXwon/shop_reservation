@@ -1,7 +1,6 @@
 package be.shwan.modules.event.domain;
 
 import be.shwan.modules.account.domain.Account;
-import be.shwan.modules.event.domain.Event;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -13,6 +12,10 @@ import java.time.LocalDateTime;
         @NamedAttributeNode("event"),
         @NamedAttributeNode("account")
 })
+@NamedEntityGraph(name = "Enrollment.withEventAndStudy", attributeNodes = {
+        @NamedAttributeNode(value = "event", subgraph = "study"),
+}, subgraphs = @NamedSubgraph(name = "study", attributeNodes = @NamedAttributeNode("study"))
+)
 @Entity
 @NoArgsConstructor
 @EqualsAndHashCode
