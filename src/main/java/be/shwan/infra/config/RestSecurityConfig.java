@@ -17,7 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableMethodSecurity
 @RequiredArgsConstructor
-public class SecurityConfig {
+public class RestSecurityConfig {
     private final JwtTokenFilter jwtTokenFilter;
     @Bean
     public PasswordEncoder passwordEncoder() {
