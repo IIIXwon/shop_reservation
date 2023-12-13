@@ -125,6 +125,9 @@ public class Account {
     }
 
     public boolean isValidEmailLoginToken() {
+        if (emailLoginTokenIssueTime == null ) {
+            return false;
+        }
         return LocalDateTime.now().isAfter(emailLoginTokenIssueTime.plusHours(1L));
     }
 
