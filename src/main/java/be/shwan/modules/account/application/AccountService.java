@@ -9,8 +9,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import java.util.Set;
 
 public interface AccountService extends UserDetailsService{
-    AccountResponseRecord getAccountInfo(Long id);
-
     Account processNewAccount(SignUpFormDto signUpFormDto) throws Exception;
 
     void login(Account account);
