@@ -101,6 +101,10 @@ dependencies {
 
     runtimeOnly 'org.postgresql:postgresql'
 
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
@@ -115,11 +119,8 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation group: 'com.tngtech.archunit', name: 'archunit-junit5', version: '1.2.1'
 
-    // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
     testImplementation group: 'org.testcontainers', name: 'testcontainers', version: '1.19.3'
-    // https://mvnrepository.com/artifact/org.testcontainers/junit-jupiter
     testImplementation group: 'org.testcontainers', name: 'junit-jupiter', version: '1.19.3'
-    // https://mvnrepository.com/artifact/org.testcontainers/postgresql
     testImplementation group: 'org.testcontainers', name: 'postgresql', version: '1.19.3'
 }
 
@@ -129,7 +130,7 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
-task copyPrivate(type: Copy) {
+tasks.register('copyPrivate', Copy) {
     copy {
         from './be-security'
         include "application.yml"
