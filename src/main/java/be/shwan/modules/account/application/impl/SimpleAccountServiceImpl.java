@@ -1,6 +1,7 @@
 package be.shwan.modules.account.application.impl;
 
 import be.shwan.infra.config.AppProperties;
+import be.shwan.infra.jwt.JwtTokenUtil;
 import be.shwan.infra.mail.dto.EmailMessage;
 import be.shwan.modules.account.application.AccountService;
 import be.shwan.modules.account.domain.Account;
@@ -17,6 +18,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -33,12 +35,13 @@ import java.util.Set;
 @Transactional
 @RequiredArgsConstructor
 public class SimpleAccountServiceImpl implements AccountService {
-
+    private final UserDetailsService userDetailsService;
     private final AccountRepository accountRepository;
     private final PasswordEncoder passwordEncoder;
     private final TemplateEngine templateEngine;
     private final AppProperties appProperties;
     private final ApplicationEventPublisher eventPublisher;
+    private final JwtTokenUtil jwtTokenUtil;
 
     private Account signUp(SignUpFormDto requestDto) {
         Account account = new Account(requestDto.nickname(), passwordEncoder.encode(requestDto.password()),
@@ -52,6 +55,12 @@ public class SimpleAccountServiceImpl implements AccountService {
         account.generateEmailCheckToken();
         sendEmailToken(account);
         return account;
+    }
+
+    @Override
+    public String generateToken(LoginDto loginDto) {
+        String username = userDetailsService.loadUserByUsername(loginDto.usernameOrEmail()).getUsername();
+        return jwtTokenUtil.generateToken(username);
     }
 
     @Override
@@ -173,20 +182,5 @@ public class SimpleAccountServiceImpl implements AccountService {
     public void updateAccount(Account account, NicknameForm signUpFormDto) {
         account.updateAccount(signUpFormDto);
         login(account);
-    }
-
-    @Transactional(readOnly = true)
-    @Override
-    public UserDetails loadUserByUsername(String nicknameOrEmail) throws UsernameNotFoundException {
-        Account account = accountRepository.findByNickname(nicknameOrEmail);
-        if (account == null ) {
-            account = accountRepository.findByEmail(nicknameOrEmail);
-        }
-
-        if (account == null ) {
-            throw new UsernameNotFoundException(nicknameOrEmail);
-        }
-
-        return new UserAccount(account);
     }
 }
