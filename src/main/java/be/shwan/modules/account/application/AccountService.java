@@ -23,7 +23,9 @@ public interface AccountService {
 
     void updateNotification(Account account, Notifications notifications);
 
-    void updateAccount(Account account, NicknameForm signUpFormDto);
+    void updateAccount(Account account, NicknameForm nicknameForm);
+
+    void restUpdateAccount(Account account, NicknameForm nicknameForm);
 
     void sendEmailLoginUrl(Account account);
 
@@ -44,4 +46,6 @@ public interface AccountService {
     String generateToken(LoginDto loginDto);
 
     Account login(LoginDto loginDto);
+
+
 }

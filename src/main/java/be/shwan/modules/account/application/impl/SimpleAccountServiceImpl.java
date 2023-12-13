@@ -74,15 +74,11 @@ public class SimpleAccountServiceImpl implements AccountService {
 
     @Override
     public Account login(LoginDto loginDto) {
-        Account account = accountRepository.findByNicknameOrEmail(loginDto.usernameOrEmail(), loginDto.usernameOrEmail());
-
-        if (account == null) {
+        UserDetails userDetails = userDetailsService.loadUserByUsername(loginDto.usernameOrEmail());
+        if (!passwordEncoder.matches(loginDto.password(), userDetails.getPassword())) {
             throw new IllegalArgumentException("닉네임, 이메일, 패스워드를 확인 하세요.");
         }
-        if (account.getPassword().equals(passwordEncoder.encode(loginDto.password()))) {
-            return account;
-        }
-        throw new IllegalArgumentException("닉네임, 이메일, 패스워드를 확인 하세요.");
+        return accountRepository.findByNickname(userDetails.getUsername());
     }
 
     @Override
@@ -192,8 +188,16 @@ public class SimpleAccountServiceImpl implements AccountService {
     }
 
     @Override
-    public void updateAccount(Account account, NicknameForm signUpFormDto) {
-        account.updateAccount(signUpFormDto);
+    public void updateAccount(Account account, NicknameForm nicknameForm) {
+        account.updateAccount(nicknameForm);
         login(account);
+    }
+
+    @Override
+    public void restUpdateAccount(Account account, NicknameForm nicknameForm) {
+        account.updateAccount(nicknameForm);
+        accountRepository.save(account);
+        // TODO 이전에 쓰던 jwt를 폐기하고 새로운 jwt를 발급
+        // jwtTokenUtil.generateToken(account);
     }
 }

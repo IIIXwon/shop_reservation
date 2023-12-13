@@ -1,8 +1,10 @@
 package be.shwan.modules.account.dto;
 
+import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
+@Component
 public class PasswordFormValidator implements Validator {
     @Override
     public boolean supports(Class<?> clazz) {

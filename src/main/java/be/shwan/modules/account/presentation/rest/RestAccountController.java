@@ -3,6 +3,7 @@ package be.shwan.modules.account.presentation.rest;
 import be.shwan.infra.jwt.JwtTokenUtil;
 import be.shwan.modules.account.application.AccountService;
 import be.shwan.modules.account.domain.Account;
+import be.shwan.modules.account.domain.AccountRepository;
 import be.shwan.modules.account.domain.CurrentUser;
 import be.shwan.modules.account.dto.AccountResponseDto;
 import be.shwan.modules.account.dto.LoginDto;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriBuilder;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -36,6 +38,7 @@ public class RestAccountController {
 
     private final SignUpFormValidator signUpFormValidator;
     private final AccountService accountService;
+    private final AccountRepository accountRepository;
     private final JwtTokenUtil jwtTokenUtil;
     private final ObjectMapper objectMapper;
 
@@ -68,7 +71,8 @@ public class RestAccountController {
     @GetMapping("/profiles")
     public ResponseEntity profileInfo(@CurrentUser Account account) throws JsonProcessingException {
         if(account != null) {
-            AccountResponseDto response = new AccountResponseDto(account.getId(), account.getNickname(), account.getEmail(), account.isActive());
+            Account account1 = accountRepository.findAccountWithTagsAndZonesById(account.getId());
+            AccountResponseDto response = new AccountResponseDto(account1.getId(), account1.getNickname(), account1.getEmail(), account1.isActive(), account1.getZones(), account1.getTags());
             return ResponseEntity.ok().body(objectMapper.writeValueAsString(response));
         }
         return ResponseEntity.badRequest().build();

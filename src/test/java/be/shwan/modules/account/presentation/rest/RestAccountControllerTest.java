@@ -1,13 +1,21 @@
 package be.shwan.modules.account.presentation.rest;
 
 import be.shwan.infra.MockMvcTest;
+import be.shwan.infra.config.AppProperties;
 import be.shwan.infra.jwt.JwtTokenUtil;
 import be.shwan.modules.account.AccountFactory;
+import be.shwan.modules.account.application.AccountService;
 import be.shwan.modules.account.domain.Account;
 import be.shwan.modules.account.dto.LoginDto;
 import be.shwan.modules.account.dto.SignUpFormDto;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import be.shwan.modules.tag.application.TagService;
+import be.shwan.modules.tag.domain.Tag;
+import be.shwan.modules.tag.dto.RequestTagDto;
+import be.shwan.modules.zone.application.ZoneService;
+import be.shwan.modules.zone.domain.Zone;
+import be.shwan.modules.zone.dto.RequestZoneDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +23,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -27,10 +36,21 @@ class RestAccountControllerTest {
     MockMvc mockMvc;
 
     @Autowired
+    AccountService accountService;
+    @Autowired
     AccountFactory accountFactory;
 
     @Autowired
+    ZoneService zoneService;
+
+    @Autowired
+    TagService tagService;
+
+    @Autowired
     JwtTokenUtil jwtTokenUtil;
+
+    @Autowired
+    AppProperties appProperties;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -76,7 +96,7 @@ class RestAccountControllerTest {
         Account account = accountFactory.createAccount(AccountFactory.DEFAULT_ACCOUNT_NAME);
         String token = jwtTokenUtil.generateToken(account);
         MvcResult mvcResult = mockMvc.perform(get("/api/profiles")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                        .header(HttpHeaders.AUTHORIZATION, appProperties.getTokenPrefix() + " " +token))
                 .andExpect(status().isOk())
                 .andReturn();
 

@@ -36,18 +36,12 @@ public class JwtTokenUtil {
     }
 
     public String generateToken(Account account){
-        return Jwts.builder()
-                .issuer("http://localhost:8080")
-                .subject("인증된 사용자")
-                .expiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_VALIDITY_SECONDS*1000))
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .claim("username", account.getNickname())
-                .signWith(SECRET_KEY).compact();
+        return generateToken(account.getNickname());
     }
 
     public String generateToken(String username){
         return Jwts.builder()
-                .issuer("http://localhost:8080")
+                .issuer(appProperties.getHost())
                 .subject("인증된 사용자")
                 .expiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_VALIDITY_SECONDS*1000))
                 .issuedAt(new Date(System.currentTimeMillis()))
