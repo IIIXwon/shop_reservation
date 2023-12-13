@@ -19,10 +19,10 @@ public record SignUpFormDto(
         String password
 ) {
 
-    @Builder
-    public SignUpFormDto(String nickname, String email, String password) {
-        this.nickname = nickname;
-        this.email = email;
-        this.password = password;
-    }
+//    @Builder
+//    public SignUpFormDto(String nickname, String email, String password) {
+//        this.nickname = nickname;
+//        this.email = email;
+//        this.password = password;
+//    }
 }

@@ -36,13 +36,24 @@ public class RestAccountController {
     void init(WebDataBinder webDataBinder) {
         webDataBinder.addValidators(signUpFormValidator);
     }
+
     @PostMapping("/signup")
     public ResponseEntity signUp(@RequestBody @Valid SignUpFormDto signUpFormDto, Errors errors) throws Exception {
-        if(errors.hasErrors()) {
+        if (errors.hasErrors()) {
             return ResponseEntity.badRequest().build();
         }
         Account account = accountService.processNewAccount(signUpFormDto);
         URI uri = URI.create("/");
         return ResponseEntity.created(uri).body("환영합니다. " + account.getNickname() + " 님");
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity login(@RequestBody @Valid LoginDto loginDto, Errors errors) throws Exception {
+        if (errors.hasErrors()) {
+            return ResponseEntity.badRequest().build();
+        }
+        String generateToken = accountService.generateToken(loginDto);
+        URI uri = URI.create("/");
+        return ResponseEntity.created(uri).body(generateToken);
     }
 }

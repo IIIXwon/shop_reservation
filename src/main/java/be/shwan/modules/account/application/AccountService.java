@@ -8,7 +8,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.util.Set;
 
-public interface AccountService extends UserDetailsService{
+public interface AccountService {
     Account processNewAccount(SignUpFormDto signUpFormDto) throws Exception;
 
     void login(Account account);
@@ -40,4 +40,6 @@ public interface AccountService extends UserDetailsService{
     void removeZone(Account account, Zone zone);
 
     Set<Zone> getZones(Account account);
+
+    String generateToken(LoginDto loginDto);
 }

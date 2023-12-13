@@ -7,12 +7,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithSecurityContextFactory;
 
 @RequiredArgsConstructor
 public class WithAccountSecurityContextFactory implements WithSecurityContextFactory<WithAccount> {
 
-    private final AccountService accountService;
+    private final UserDetailsService userDetailsService;
     private final AccountFactory accountFactory;
 
     @Override
@@ -25,7 +26,7 @@ public class WithAccountSecurityContextFactory implements WithSecurityContextFac
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-            UserDetails principal = accountService.loadUserByUsername(nickname);
+            UserDetails principal = userDetailsService.loadUserByUsername(nickname);
             Authentication authentication = new UsernamePasswordAuthenticationToken(principal, principal.getPassword(), principal.getAuthorities());
             context.setAuthentication(authentication);
         }

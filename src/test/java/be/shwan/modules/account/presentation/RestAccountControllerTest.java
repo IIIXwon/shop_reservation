@@ -2,6 +2,8 @@ package be.shwan.modules.account.presentation;
 
 import be.shwan.infra.MockMvcTest;
 import be.shwan.modules.account.AccountFactory;
+import be.shwan.modules.account.domain.Account;
+import be.shwan.modules.account.dto.LoginDto;
 import be.shwan.modules.account.dto.SignUpFormDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -19,6 +22,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class RestAccountControllerTest {
     @Autowired
     MockMvc mockMvc;
+
+    @Autowired
+    AccountFactory accountFactory;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -42,5 +48,19 @@ class RestAccountControllerTest {
                         .content(objectMapper.writeValueAsBytes(dto)))
                 .andExpect(status().isCreated())
                 .andExpect(redirectedUrl("/"));
+    }
+
+    @DisplayName("[POST] /api/login, 로그인 시도 성공시, accessToken 발급")
+    @Test
+    void loginSuccess() throws Exception {
+        Account account = accountFactory.createAccount(AccountFactory.DEFAULT_ACCOUNT_NAME);
+        LoginDto dto = new LoginDto(account.getEmail(), AccountFactory.DEFAULT_ACCOUNT_PASSWORD);
+        MvcResult mvcResult = mockMvc.perform(post("/api/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(dto)))
+                .andExpect(status().isCreated())
+                .andExpect(redirectedUrl("/"))
+                .andReturn();
+        assertNotNull(mvcResult.getResponse().getContentAsString());
     }
 }
