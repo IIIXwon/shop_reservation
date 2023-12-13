@@ -11,6 +11,8 @@ import be.shwan.modules.notification.domain.NotificationRepository;
 import be.shwan.modules.notification.domain.NotificationType;
 import be.shwan.modules.study.domain.Study;
 import be.shwan.modules.study.domain.StudyRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -30,6 +32,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class StudyEventListener {
 
+    private final EntityManager entityManager;
     private final StudyRepository studyRepository;
     private final AccountRepository accountRepository;
     private final EmailService emailService;
