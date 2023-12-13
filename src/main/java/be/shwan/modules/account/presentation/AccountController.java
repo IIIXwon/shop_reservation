@@ -70,8 +70,6 @@ public class AccountController {
             model.addAttribute("error", "wrong.token");
             return CHECKED_EMAIL_VIEW;
         }
-
-
         accountService.completeSignUp(account);
         model.addAttribute("numberOfUser", accountRepository.count());
         model.addAttribute("nickname", account.getNickname());

@@ -1,6 +1,7 @@
 package be.shwan.modules.account.presentation;
 
 import be.shwan.infra.MockMvcTest;
+import be.shwan.infra.jwt.JwtTokenUtil;
 import be.shwan.modules.account.AccountFactory;
 import be.shwan.modules.account.domain.Account;
 import be.shwan.modules.account.dto.LoginDto;
@@ -10,11 +11,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -25,6 +28,9 @@ class RestAccountControllerTest {
 
     @Autowired
     AccountFactory accountFactory;
+
+    @Autowired
+    JwtTokenUtil jwtTokenUtil;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -61,6 +67,19 @@ class RestAccountControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(redirectedUrl("/"))
                 .andReturn();
+        assertNotNull(mvcResult.getResponse().getContentAsString());
+    }
+
+    @DisplayName("[GET] /api/profiles, 자신의 프로필 정보 불러오기")
+    @Test
+    void profileInfoSuccess() throws Exception {
+        Account account = accountFactory.createAccount(AccountFactory.DEFAULT_ACCOUNT_NAME);
+        String token = jwtTokenUtil.generateToken(account);
+        MvcResult mvcResult = mockMvc.perform(get("/api/profiles")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isOk())
+                .andReturn();
+
         assertNotNull(mvcResult.getResponse().getContentAsString());
     }
 }

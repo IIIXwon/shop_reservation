@@ -2,9 +2,13 @@ package be.shwan.modules.account.presentation;
 
 import be.shwan.modules.account.application.AccountService;
 import be.shwan.modules.account.domain.Account;
+import be.shwan.modules.account.domain.CurrentUser;
+import be.shwan.modules.account.dto.AccountResponseDto;
 import be.shwan.modules.account.dto.LoginDto;
 import be.shwan.modules.account.dto.SignUpFormDto;
 import be.shwan.modules.account.dto.SignUpFormValidator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +35,7 @@ public class RestAccountController {
 
     private final SignUpFormValidator signUpFormValidator;
     private final AccountService accountService;
+    private final ObjectMapper objectMapper;
 
     @InitBinder("signUpFormDto")
     void init(WebDataBinder webDataBinder) {
@@ -55,5 +60,14 @@ public class RestAccountController {
         String generateToken = accountService.generateToken(loginDto);
         URI uri = URI.create("/");
         return ResponseEntity.created(uri).body(generateToken);
+    }
+
+    @GetMapping("/profiles")
+    public ResponseEntity profileInfo(@CurrentUser Account account) throws JsonProcessingException {
+        if(account != null) {
+            AccountResponseDto response = new AccountResponseDto(account.getId(), account.getNickname(), account.getEmail(), account.isActive());
+            return ResponseEntity.ok().body(objectMapper.writeValueAsString(response));
+        }
+        return ResponseEntity.badRequest().build();
     }
 }
