@@ -37,4 +37,8 @@ public class AccountFactory {
     private SignUpFormDto getDefaultSignUpFormDto(String nickname) {
         return new SignUpFormDto(nickname, nickname + "@email.com", "12345678");
     }
+
+    public Account createDefaultAccount() throws Exception {
+        return createAccount(DEFAULT_ACCOUNT_NAME);
+    }
 }

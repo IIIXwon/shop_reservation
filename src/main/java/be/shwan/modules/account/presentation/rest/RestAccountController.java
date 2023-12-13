@@ -1,5 +1,6 @@
-package be.shwan.modules.account.presentation;
+package be.shwan.modules.account.presentation.rest;
 
+import be.shwan.infra.jwt.JwtTokenUtil;
 import be.shwan.modules.account.application.AccountService;
 import be.shwan.modules.account.domain.Account;
 import be.shwan.modules.account.domain.CurrentUser;
@@ -35,6 +36,7 @@ public class RestAccountController {
 
     private final SignUpFormValidator signUpFormValidator;
     private final AccountService accountService;
+    private final JwtTokenUtil jwtTokenUtil;
     private final ObjectMapper objectMapper;
 
     @InitBinder("signUpFormDto")
@@ -57,9 +59,10 @@ public class RestAccountController {
         if (errors.hasErrors()) {
             return ResponseEntity.badRequest().build();
         }
-        String generateToken = accountService.generateToken(loginDto);
+        Account account = accountService.login(loginDto);
+        String token = jwtTokenUtil.generateToken(account);
         URI uri = URI.create("/");
-        return ResponseEntity.created(uri).body(generateToken);
+        return ResponseEntity.created(uri).body(token);
     }
 
     @GetMapping("/profiles")

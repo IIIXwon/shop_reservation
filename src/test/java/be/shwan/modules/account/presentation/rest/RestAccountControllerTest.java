@@ -1,4 +1,4 @@
-package be.shwan.modules.account.presentation;
+package be.shwan.modules.account.presentation.rest;
 
 import be.shwan.infra.MockMvcTest;
 import be.shwan.infra.jwt.JwtTokenUtil;
@@ -40,7 +40,7 @@ class RestAccountControllerTest {
     void signUpFailed() throws Exception {
         mockMvc.perform(post("/api/signup")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsBytes("")))
+                        .content(objectMapper.writeValueAsBytes(new SignUpFormDto("", "", ""))))
                 .andExpect(status().isBadRequest());
     }
 

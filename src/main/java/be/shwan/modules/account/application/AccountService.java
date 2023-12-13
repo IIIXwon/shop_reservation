@@ -42,4 +42,6 @@ public interface AccountService {
     Set<Zone> getZones(Account account);
 
     String generateToken(LoginDto loginDto);
+
+    Account login(LoginDto loginDto);
 }

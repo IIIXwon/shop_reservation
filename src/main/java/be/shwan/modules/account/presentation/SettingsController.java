@@ -9,7 +9,6 @@ import be.shwan.modules.tag.domain.TagRepository;
 import be.shwan.modules.tag.dto.RequestTagDto;
 import be.shwan.modules.zone.application.ZoneService;
 import be.shwan.modules.zone.domain.Zone;
-import be.shwan.modules.zone.domain.ZoneRepository;
 import be.shwan.modules.zone.dto.RequestZoneDto;
 import be.shwan.modules.zone.dto.ResponseZoneDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -37,7 +36,6 @@ public class SettingsController {
     private final TagRepository tagRepository;
 
     private final ZoneService zoneService;
-    private final ZoneRepository zoneRepository;
 
     private final NicknameFormValidator nicknameFormValidator;
 

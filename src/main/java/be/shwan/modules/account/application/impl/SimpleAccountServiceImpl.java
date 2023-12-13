@@ -73,6 +73,19 @@ public class SimpleAccountServiceImpl implements AccountService {
     }
 
     @Override
+    public Account login(LoginDto loginDto) {
+        Account account = accountRepository.findByNicknameOrEmail(loginDto.usernameOrEmail(), loginDto.usernameOrEmail());
+
+        if (account == null) {
+            throw new IllegalArgumentException("닉네임, 이메일, 패스워드를 확인 하세요.");
+        }
+        if (account.getPassword().equals(passwordEncoder.encode(loginDto.password()))) {
+            return account;
+        }
+        throw new IllegalArgumentException("닉네임, 이메일, 패스워드를 확인 하세요.");
+    }
+
+    @Override
     public void sendEmailLogin(Account account, String token) {
         if (account.isValidEmailLoginToken(token)) {
             UsernamePasswordAuthenticationToken user = new UsernamePasswordAuthenticationToken(
