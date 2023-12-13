@@ -1,7 +1,6 @@
 package be.shwan.modules.account.application.impl;
 
 import be.shwan.infra.config.AppProperties;
-import be.shwan.infra.mail.application.EmailService;
 import be.shwan.infra.mail.dto.EmailMessage;
 import be.shwan.modules.account.application.AccountService;
 import be.shwan.modules.account.domain.Account;
@@ -37,7 +36,6 @@ public class SimpleAccountServiceImpl implements AccountService {
 
     private final AccountRepository accountRepository;
     private final PasswordEncoder passwordEncoder;
-    private final EmailService emailService;
     private final TemplateEngine templateEngine;
     private final AppProperties appProperties;
     private final ApplicationEventPublisher eventPublisher;
@@ -46,12 +44,6 @@ public class SimpleAccountServiceImpl implements AccountService {
         Account account = new Account(requestDto.nickname(), passwordEncoder.encode(requestDto.password()),
                 requestDto.email());
         return accountRepository.save(account);
-    }
-
-    @Override
-    public AccountResponseRecord getAccountInfo(Long id) {
-        Account account = accountRepository.findById(id).orElseThrow();
-        return getAccountRecord(account);
     }
 
     @Override
@@ -131,7 +123,6 @@ public class SimpleAccountServiceImpl implements AccountService {
                 process);
         account.sendEmailCheckToken();
         eventPublisher.publishEvent(new EmailCreateEvent(emailMessage));
-//        emailService.sendEmail(emailMessage);
     }
 
     @Override
@@ -141,7 +132,6 @@ public class SimpleAccountServiceImpl implements AccountService {
         String htmlEmailTemplate = htmlEmailTemplate(account, linkMessage);
         EmailMessage emailMessage = new EmailMessage(account.getEmail(), "스터디올레 이메일 로그인 안내", htmlEmailTemplate);
         eventPublisher.publishEvent(new EmailCreateEvent(emailMessage));
-//        emailService.sendEmail(emailMessage);
     }
 
     private String htmlEmailTemplate(Account account, String linkMessage) {
@@ -151,8 +141,7 @@ public class SimpleAccountServiceImpl implements AccountService {
         context.setVariable("linkName", "이메일 인증하기");
         context.setVariable("host", appProperties.getHost());
         context.setVariable("link", linkMessage);
-        String process = templateEngine.process("mail/simple-link", context);
-        return process;
+        return templateEngine.process("mail/simple-link", context);
     }
 
 
@@ -184,18 +173,6 @@ public class SimpleAccountServiceImpl implements AccountService {
     public void updateAccount(Account account, NicknameForm signUpFormDto) {
         account.updateAccount(signUpFormDto);
         login(account);
-    }
-
-
-
-
-    private AccountResponseRecord getAccountRecord(Account newAccount) {
-        return AccountResponseRecord.builder()
-                .id(newAccount.getId())
-                .nickname(newAccount.getNickname())
-                .email(newAccount.getEmail())
-                .active(newAccount.isActive())
-                .build();
     }
 
     @Transactional(readOnly = true)

@@ -9,7 +9,7 @@ import org.hibernate.validator.constraints.Length;
 public record SignUpFormDto(
         @NotBlank
         @Length(min = 1, max = 10)
-        @Pattern(regexp = "^[ㄱ-ㅎ가-힣a-z0-9_-]{1,10}$")
+        @Pattern(regexp = "^[ㄱ-ㅎ가-힣a-zA-Z0-9_-]{1,10}$")
         String nickname,
         @NotBlank
         @Email

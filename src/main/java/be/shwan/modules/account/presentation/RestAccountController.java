@@ -4,6 +4,8 @@ import be.shwan.modules.account.application.AccountService;
 import be.shwan.modules.account.domain.Account;
 import be.shwan.modules.account.dto.LoginDto;
 import be.shwan.modules.account.dto.SignUpFormDto;
+import be.shwan.modules.account.dto.SignUpFormValidator;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -13,38 +15,34 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.Errors;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriBuilder;
 
+import java.net.URI;
 import java.util.List;
 
-@RestController
-@RequestMapping("/api/auth")
-@RequiredArgsConstructor
 @Slf4j
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api")
 public class RestAccountController {
 
+    private final SignUpFormValidator signUpFormValidator;
     private final AccountService accountService;
-    private final AuthenticationManager authenticationManager;
 
-    @PostMapping(value={"/sign-in", "/login"})
-    public ResponseEntity<?> login(@ModelAttribute LoginDto loginDto) {
-        log.info("requestDto : {}", loginDto.toString());
-        Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                loginDto.usernameOrEmail(), loginDto.password(), List.of(new SimpleGrantedAuthority("ROLE_USER"))
-        ));
-        SecurityContext context = SecurityContextHolder.getContext();
-        context.setAuthentication(authenticate);
-        return ResponseEntity.ok("ok");
+    @InitBinder("signUpFormDto")
+    void init(WebDataBinder webDataBinder) {
+        webDataBinder.addValidators(signUpFormValidator);
     }
-
-
-    @PostMapping(value = {"/register", "/sign-up"})
-    public ResponseEntity<?> register(@ModelAttribute SignUpFormDto requestDto) throws Exception {
-        log.info("request id : {}", requestDto.toString());
-        Account account = accountService.processNewAccount(requestDto);
-        return ResponseEntity.ok(account);
+    @PostMapping("/signup")
+    public ResponseEntity signUp(@RequestBody @Valid SignUpFormDto signUpFormDto, Errors errors) throws Exception {
+        if(errors.hasErrors()) {
+            return ResponseEntity.badRequest().build();
+        }
+        Account account = accountService.processNewAccount(signUpFormDto);
+        URI uri = URI.create("/");
+        return ResponseEntity.created(uri).body("환영합니다. " + account.getNickname() + " 님");
     }
 }
