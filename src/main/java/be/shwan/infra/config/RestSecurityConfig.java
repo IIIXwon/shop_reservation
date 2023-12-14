@@ -33,8 +33,11 @@ public class RestSecurityConfig {
                                         "/email-login", "/check-email-login", "/login-by-email").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/profile/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/search/study").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/study").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/signup").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/login").permitAll()
+
                                 // web
                                 .requestMatchers(HttpMethod.GET, "/images/**", "/node_modules/**").permitAll()
                                 .anyRequest().authenticated())
