@@ -50,7 +50,7 @@ public interface StudyService {
 
     void updateStudyTitle(Study study, StudyTitleRequestDto studyTitleRequestDto);
 
-    void removeStudy(Study study);
+    void removeStudy(Study study, Account account);
 
     Study getStudyWithMembersAndManagers(String path);
 
