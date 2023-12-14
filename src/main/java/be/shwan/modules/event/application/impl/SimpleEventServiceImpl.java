@@ -41,6 +41,9 @@ public class SimpleEventServiceImpl implements EventService {
     @Override
     public void leaveEvent(Event event, Account account) {
         Enrollment enrollment = enrollmentRepository.findByEventAndAccount(event, account);
+        if (enrollment == null ) {
+            throw new IllegalStateException("모임 참가 취소에 실패했습니다.");
+        }
         event.removeEnrollment(enrollment);
         enrollmentRepository.delete(enrollment);
         event.acceptNextWaitingEnrollment();
@@ -123,6 +126,11 @@ public class SimpleEventServiceImpl implements EventService {
     @Override
     public Event getEventWithEnrollment(Long id) {
         return eventRepository.findEventWithEnrollmentById(id);
+    }
+
+    @Override
+    public List<List<Event>> getEventList(Study study) {
+        return getEventList(getEventByStudy(study));
     }
 
     @Override

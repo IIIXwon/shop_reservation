@@ -41,7 +41,7 @@ public class EventController {
     @GetMapping(value = {"/study/{path}/new-event"})
     public String eventFormPage(@CurrentUser Account account, @PathVariable String path, Model model) {
         DateTimeFormatter dateTimeFormatter = getDateTimeFormatter();
-        Study study = studyService.getStudyWithMembersAndManagers(path);
+        Study study = studyService.getStudyWithMembersAndManagers(path, account);
         model.addAttribute(new EventRequestDto("", EventType.FCFS, 0, LocalDateTime.now().format(dateTimeFormatter),
                 LocalDateTime.now().format(dateTimeFormatter), LocalDateTime.now().format(dateTimeFormatter),  ""));
         model.addAttribute(study);
@@ -52,7 +52,7 @@ public class EventController {
     @PostMapping(value = {"/study/{path}/new-event"})
     public String newEvent(@CurrentUser Account account, @PathVariable String path, @Valid EventRequestDto eventRequestDto,
                            Errors errors, Model model) {
-        Study study = studyService.getStudyWithMembersAndManagers(path);
+        Study study = studyService.getStudyWithMembersAndManagers(path, account);
         if (errors.hasErrors()) {
             model.addAttribute(account);
             model.addAttribute(study);
@@ -65,7 +65,7 @@ public class EventController {
     @GetMapping(value = {"/study/{path}/events/{id}"})
     public String eventViewPage(@CurrentUser Account account, @PathVariable String path, @PathVariable Long id,
                                  Model model) {
-        Study study = studyService.getStudyWithMembersAndManagers(path);
+        Study study = studyService.getStudyWithMembersAndManagers(path, account);
         Event event = eventRepository.findById(id).orElseThrow();
         model.addAttribute(account);
         model.addAttribute(study);
@@ -75,7 +75,7 @@ public class EventController {
 
     @GetMapping(value = {"/study/{path}/events"})
     String eventViewList(@CurrentUser Account account, @PathVariable String path, Model model) {
-        Study study = studyService.getStudy(path);
+        Study study = studyService.getStudy(path, account);
 
         List<Event> events = eventService.getEventByStudy(study);
         List<List<Event>> eventList = eventService.getEventList(events);
@@ -89,7 +89,7 @@ public class EventController {
     @GetMapping(value = {"/study/{path}/events/{id}/edit"})
     public String eventFormPage(@CurrentUser Account account, @PathVariable String path, @PathVariable Long id, Model model) {
         DateTimeFormatter dateTimeFormatter = getDateTimeFormatter();
-        Study study = studyService.getStudyWithMembersAndManagers(path);
+        Study study = studyService.getStudyWithMembersAndManagers(path, account);
         Event event = eventRepository.findById(id).orElseThrow();
         model.addAttribute(new EventRequestDto(event.getTitle(), event.getEventType(), event.getLimitOfEnrollments(),
                 event.getEndEnrollmentDateTime().format(dateTimeFormatter), event.getStartDateTime().format(dateTimeFormatter),
@@ -101,11 +101,10 @@ public class EventController {
 
     }
 
-    @PostMapping(value = {"/study/{path}/events/{id}/edit"})
-    public String updateEventForm(@CurrentUser Account account, @PathVariable String path, @PathVariable Long id,
+    @PostMapping(value = {"/study/{path}/events/{eventId}/edit"})
+    public String updateEventForm(@CurrentUser Account account, @PathVariable String path, @PathVariable("eventId")Event event,
                                   @Valid EventRequestDto eventRequestDto, Errors errors, Model model) {
-        Study study = studyService.getStudyWithMembersAndManagers(path);
-        Event event = eventService.getEventWithEnrollment(id);
+        Study study = studyService.getStudyWithMembersAndManagers(path, account);
         if (errors.hasErrors() || event.getLimitOfEnrollments() > eventRequestDto.limitOfEnrollments()) {
             model.addAttribute(study);
             model.addAttribute(account);
@@ -113,7 +112,7 @@ public class EventController {
             return EVENT_UPDATE_FORM_VIEW;
         }
         eventService.update(account, study, event, eventRequestDto);
-        return "redirect:/study/" + path + "/events/" + id;
+        return "redirect:/study/" + study.getEncodePath() + "/events/" + event.getId();
     }
 
     @DeleteMapping(value = {"/study/{path}/events/{id}"})
@@ -125,14 +124,14 @@ public class EventController {
 
     @PostMapping(value = {"/study/{path}/events/{id}/enroll"})
     public String enrollEvent(@CurrentUser Account account, @PathVariable String path, @PathVariable Long id) throws IllegalAccessException {
-        Study study = studyService.getStudyToEnroll(path);
+        Study study = studyService.getStudyToEnroll(path, account);
         eventService.enrollEvent(eventRepository.findById(id).orElseThrow(), account);
         return "redirect:/study/" + study.getEncodePath() + "/events/" + id;
     }
 
     @PostMapping(value = {"/study/{path}/events/{id}/leave"})
     public String leaveEvent(@CurrentUser Account account, @PathVariable String path, @PathVariable Long id) {
-        Study study = studyService.getStudyToEnroll(path);
+        Study study = studyService.getStudyToEnroll(path, account);
         eventService.leaveEvent(eventRepository.findById(id).orElseThrow(), account);
         return "redirect:/study/" + study.getEncodePath() + "/events/" + id;
     }

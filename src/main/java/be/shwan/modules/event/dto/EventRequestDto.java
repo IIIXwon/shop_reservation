@@ -17,4 +17,5 @@ public record EventRequestDto(
         @NotBlank
         String endDateTime,
         String description) {
+
 }

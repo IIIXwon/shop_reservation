@@ -56,29 +56,29 @@ public class StudyController {
 
     @GetMapping(value = {"/study/{path}"})
     public String studyViewPage(@CurrentUser Account account, @PathVariable String path, Model model) {
-        Study byPath =  studyService.getStudy(path);
+        Study byPath =  studyService.getStudy(path, account);
         model.addAttribute(byPath);
         model.addAttribute(account);
         return STUDY_VIEW_PATH;
     }
 
     @GetMapping(value = {"/study/{path}/members"})
-    public String studyMemberPage(@PathVariable String path, Model model) {
-        Study byPath = studyService.getStudy(path);
+    public String studyMemberPage(@CurrentUser Account account, @PathVariable String path, Model model) {
+        Study byPath = studyService.getStudy(path, account);
         model.addAttribute(byPath);
         return STUDY_MEMBER_VIEW;
     }
 
     @PostMapping(value = {"/study/{path}/join"})
     public String joinStudy(@CurrentUser Account account, @PathVariable String path) {
-        Study study = studyService.getStudyWithMembersAndManagers(path);
+        Study study = studyService.getStudyWithMembersAndManagers(path, account);
         studyService.join(study, account);
         return "redirect:/study/" + URLEncoder.encode(path, StandardCharsets.UTF_8);
     }
 
     @PostMapping(value = {"/study/{path}/leave"})
     public String leaveStudy(@CurrentUser Account account, @PathVariable String path) {
-        Study study = studyService.getStudyWithMembersAndManagers(path);
+        Study study = studyService.getStudyWithMembersAndManagers(path, account);
         studyService.leave(study, account);
         return "redirect:/study/" + URLEncoder.encode(path, StandardCharsets.UTF_8);
     }

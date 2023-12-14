@@ -32,4 +32,6 @@ public interface EventService {
     void checkInEnrollment(Enrollment enrollment);
 
     void cancelCheckInEnrollment(Enrollment enrollment);
+
+    List<List<Event>> getEventList(Study study);
 }

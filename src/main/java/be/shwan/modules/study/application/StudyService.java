@@ -14,7 +14,7 @@ public interface StudyService {
 
     void updateDescription(Study study, StudyDescriptionRequestDto studyDescriptionRequestDto);
 
-    Study getStudy(String path);
+    Study getStudy(String path, Account account);
 
     Study getStudyToUpdate(String path, Account account);
 
@@ -52,13 +52,13 @@ public interface StudyService {
 
     void removeStudy(Study study, Account account);
 
-    Study getStudyWithMembersAndManagers(String path);
+    Study getStudyWithMembersAndManagers(String path, Account account);
 
     void join(Study study, Account account);
 
     void leave(Study study, Account account);
 
-    Study getStudyToEnroll(String path);
+    Study getStudyToEnroll(String path, Account account);
 
     void generateTestdatas(Account account);
 }

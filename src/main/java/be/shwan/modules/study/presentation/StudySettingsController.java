@@ -249,7 +249,7 @@ public class StudySettingsController {
 
     @PostMapping(value = {"/study/remove"})
     public String removeStudy(@CurrentUser Account account, @PathVariable String path) {
-        Study study = studyService.getStudyWithMembersAndManagers(path);
+        Study study = studyService.getStudyWithMembersAndManagers(path, account);
         studyService.removeStudy(study, account);
         return "redirect:/";
     }

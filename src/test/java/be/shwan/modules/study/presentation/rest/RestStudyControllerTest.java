@@ -121,7 +121,7 @@ class RestStudyControllerTest {
     @DisplayName("[POST] /api/study/{path}/join, 스터디 참가")
     @Test
     void joinStudy() throws Exception {
-        Study study = studyFactory.getStudy(DEFAULT_PATH);
+        Study study = studyFactory.getStudy(DEFAULT_PATH, studyManager);
         study.publish();
         mockMvc.perform(post("/api/study/{path}/join", DEFAULT_PATH)
                         .header(HttpHeaders.AUTHORIZATION, memberBearerToken))
@@ -136,7 +136,7 @@ class RestStudyControllerTest {
     @DisplayName("[POST] /api/study/{path}/leave")
     @Test
     void leaveStudy() throws Exception {
-        Study study = studyFactory.getStudy(DEFAULT_PATH);
+        Study study = studyFactory.getStudy(DEFAULT_PATH, studyManager);
         study.publish();
         studyService.join(study, studyMember);
         mockMvc.perform(post("/api/study/{path}/leave", DEFAULT_PATH)

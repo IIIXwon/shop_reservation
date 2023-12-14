@@ -8,7 +8,6 @@ import be.shwan.modules.study.dto.StudyRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
@@ -31,8 +30,8 @@ public class StudyFactory {
         return studyService.newStudy(manager, requestDto);
     }
 
-    public Study getStudy(String path) {
-        return studyService.getStudy(path);
+    public Study getStudy(String path, Account account) {
+        return studyService.getStudy(path, account);
     }
 
     private StudyRequestDto getDefaultStudyRequestDto() {
