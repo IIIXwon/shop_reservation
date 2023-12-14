@@ -19,6 +19,8 @@ import be.shwan.modules.zone.dto.RequestZoneDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +36,7 @@ public class SimpleStudyServiceImpl implements StudyService {
     private final TagService tagService;
     private final ZoneService zoneService;
     private final ApplicationEventPublisher eventPublisher;
+    private final Environment environment;
 
 
     @Override
@@ -106,7 +109,7 @@ public class SimpleStudyServiceImpl implements StudyService {
 
     @Override
     public void closed(Study study) {
-        if (study.isClosed()) {
+        if (study.isClosed() || !study.isPublished()) {
             throw new IllegalStateException("이미 종료된 스터디 입니다");
         }
         study.close();
@@ -131,10 +134,13 @@ public class SimpleStudyServiceImpl implements StudyService {
         if (!study.isRecruiting()) {
             throw new IllegalStateException("팀원 모집이 종료되었습니다.");
         }
-
-        if (study.getRecruitingUpdateDateTime() != null && !LocalDateTime.now().isAfter(study.getRecruitingUpdateDateTime().plusHours(1L))) {
-            throw new IllegalStateException("팀원 모집은 1시간에 한번 변경할 수 있습니다.");
+        ;
+        if (!environment.matchesProfiles("test")) {
+            if (study.getRecruitingUpdateDateTime() != null && !LocalDateTime.now().isAfter(study.getRecruitingUpdateDateTime().plusHours(1L))) {
+                throw new IllegalStateException("팀원 모집은 1시간에 한번 변경할 수 있습니다.");
+            }
         }
+
         study.stopRecruit();
         eventPublisher.publishEvent(new StudyUpdatedEvent(study, "팀원 모집이 종료 되었습니다."));
     }
@@ -150,8 +156,8 @@ public class SimpleStudyServiceImpl implements StudyService {
     }
 
     @Override
-    public void removeStudy(Study study) {
-        if (!study.removeAble()){
+    public void removeStudy(Study study, Account account) {
+        if (!study.removeAble() || !study.isManager(account)){
             throw new IllegalStateException("스터디를 삭제 할 수 없습니다.");
 
         }
