@@ -6,7 +6,6 @@ import be.shwan.modules.study.application.StudyService;
 import be.shwan.modules.study.domain.Study;
 import be.shwan.modules.study.dto.StudyRequestDto;
 import be.shwan.modules.study.dto.StudyRequestDtoValidator;
-import be.shwan.modules.study.dto.StudyResponseDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
@@ -49,27 +48,27 @@ public class RestStudyController {
     }
 
     @GetMapping(value = {"/{path}"})
-    public ResponseEntity getStudy(@PathVariable String path) throws JsonProcessingException {
-        Study byPath =  studyService.getStudy(path);
+    public ResponseEntity getStudy(@CurrentUser Account account, @PathVariable String path) throws JsonProcessingException {
+        Study byPath =  studyService.getStudy(path, account);
         return ResponseEntity.ok().body(objectMapper.writeValueAsString(byPath));
     }
 
     @GetMapping(value = {"/{path}/members"})
-    public ResponseEntity studyMemberPage(@PathVariable String path) throws JsonProcessingException {
-        Study byPath = studyService.getStudy(path);
+    public ResponseEntity studyMemberPage(@CurrentUser Account account,  @PathVariable String path) throws JsonProcessingException {
+        Study byPath = studyService.getStudy(path, account);
         return ResponseEntity.ok().body(objectMapper.writeValueAsString(byPath.getMembers()));
     }
 
     @PostMapping(value = {"/{path}/join"})
     public ResponseEntity joinStudy(@CurrentUser Account account, @PathVariable String path) {
-        Study study = studyService.getStudyWithMembersAndManagers(path);
+        Study study = studyService.getStudyWithMembersAndManagers(path, account);
         studyService.join(study, account);
         return ResponseEntity.ok().body("'" + study.getTitle() + "' 스터디에 " + account.getNickname() +  " 님이 참가 했습니다.");
     }
 
     @PostMapping(value = {"/{path}/leave"})
     public ResponseEntity leaveStudy(@CurrentUser Account account, @PathVariable String path) {
-        Study study = studyService.getStudyWithMembersAndManagers(path);
+        Study study = studyService.getStudyWithMembersAndManagers(path, account);
         studyService.leave(study, account);
         return ResponseEntity.ok().body("'" + study.getTitle() + "' 스터디에서 " + account.getNickname() +  " 님이 탈퇴 했습니다.");
     }

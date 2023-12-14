@@ -65,6 +65,7 @@ class StudyControllerTest extends AbstractContainerBaseTest {
     @DisplayName("[POST] /new-study, 스터디 개설")
     @Test
     void testNewStudy() throws Exception {
+        Account manager = accountFactory.findAccountByNickname(USER_NAME);
         mockMvc.perform(post("/new-study")
                         .param("path", StudyFactory.DEFAULT_PATH)
                         .param("title", StudyFactory.DEFAULT_TITLE)
@@ -76,7 +77,7 @@ class StudyControllerTest extends AbstractContainerBaseTest {
                 .andExpect(redirectedUrl("/study/" + StudyFactory.DEFAULT_PATH))
                 .andExpect(authenticated().withUsername(USER_NAME))
         ;
-        assertNotNull(studyFactory.getStudy(StudyFactory.DEFAULT_PATH));
+        assertNotNull(studyFactory.getStudy(StudyFactory.DEFAULT_PATH, manager));
     }
 
     @WithAccount(USER_NAME)
@@ -162,7 +163,7 @@ class StudyControllerTest extends AbstractContainerBaseTest {
                 .andExpect(authenticated().withUsername(USER_NAME))
         ;
 
-        Study byPath = studyFactory.getStudy(StudyFactory.DEFAULT_PATH);
+        Study byPath = studyFactory.getStudy(StudyFactory.DEFAULT_PATH, manager);
 
         assertEquals(shortDescription, byPath.getShortDescription());
         assertEquals(fullDescription, byPath.getFullDescription());
@@ -198,7 +199,7 @@ class StudyControllerTest extends AbstractContainerBaseTest {
                 .andExpect(authenticated().withUsername(USER_NAME))
         ;
 
-        Study byPath = studyFactory.getStudy(StudyFactory.DEFAULT_PATH);
+        Study byPath = studyFactory.getStudy(StudyFactory.DEFAULT_PATH, manager);
         assertTrue(byPath.isUseBanner());
     }
 
@@ -217,7 +218,7 @@ class StudyControllerTest extends AbstractContainerBaseTest {
                 .andExpect(authenticated().withUsername(USER_NAME))
         ;
 
-        Study byPath = studyFactory.getStudy(StudyFactory.DEFAULT_PATH);
+        Study byPath = studyFactory.getStudy(StudyFactory.DEFAULT_PATH, manager);
         assertFalse(byPath.isUseBanner());
     }
 
@@ -252,7 +253,7 @@ class StudyControllerTest extends AbstractContainerBaseTest {
                 .andExpect(authenticated().withUsername(USER_NAME))
         ;
 
-        Study study = studyFactory.getStudy(StudyFactory.DEFAULT_PATH);
+        Study study = studyFactory.getStudy(StudyFactory.DEFAULT_PATH, manager);
         assertEquals(1, study.getTags().size());
     }
 
@@ -275,7 +276,7 @@ class StudyControllerTest extends AbstractContainerBaseTest {
                 .andExpect(authenticated().withUsername(USER_NAME))
         ;
 
-        Study study = studyFactory.getStudy(StudyFactory.DEFAULT_PATH);
+        Study study = studyFactory.getStudy(StudyFactory.DEFAULT_PATH, manager);
         assertEquals(0, study.getTags().size());
     }
 
@@ -311,7 +312,7 @@ class StudyControllerTest extends AbstractContainerBaseTest {
                 .andExpect(authenticated().withUsername(USER_NAME))
         ;
 
-        Study study = studyFactory.getStudy(StudyFactory.DEFAULT_PATH);
+        Study study = studyFactory.getStudy(StudyFactory.DEFAULT_PATH, manager);
         assertEquals(1, study.getZones().size());
     }
 
@@ -322,7 +323,7 @@ class StudyControllerTest extends AbstractContainerBaseTest {
     void testStudyZonesRemove() throws Exception {
         Account manager = accountFactory.findAccountByNickname(USER_NAME);
         studyFactory.defaultTestCreateStudy(manager);
-        Study study = studyFactory.getStudy(StudyFactory.DEFAULT_PATH);
+        Study study = studyFactory.getStudy(StudyFactory.DEFAULT_PATH, manager);
 
         RequestZoneDto requestZoneDto = new RequestZoneDto("Andong(안동시)/North Gyeongsang");
         studyService.addZone(study, requestZoneDto);
@@ -368,7 +369,7 @@ class StudyControllerTest extends AbstractContainerBaseTest {
                 .andExpect(authenticated().withUsername(USER_NAME))
         ;
 
-        Study study = studyFactory.getStudy(StudyFactory.DEFAULT_PATH);
+        Study study = studyFactory.getStudy(StudyFactory.DEFAULT_PATH, manager);
         assertTrue(study.isPublished());
     }
 
@@ -377,8 +378,8 @@ class StudyControllerTest extends AbstractContainerBaseTest {
     @Test
     void testStudyClosed() throws Exception {
         Account manager = accountFactory.findAccountByNickname(USER_NAME);
-        studyFactory.defaultTestCreateStudy(manager);
-
+        Study study = studyFactory.defaultTestCreateStudy(manager);
+        study.publish();
         mockMvc.perform(post("/study/{path}/settings/study/close", StudyFactory.DEFAULT_PATH)
                         .with(csrf()))
                 .andExpect(status().is3xxRedirection())
@@ -387,7 +388,7 @@ class StudyControllerTest extends AbstractContainerBaseTest {
                 .andExpect(authenticated().withUsername(USER_NAME))
         ;
 
-        Study study = studyFactory.getStudy(StudyFactory.DEFAULT_PATH);
+        study = studyFactory.getStudy(StudyFactory.DEFAULT_PATH, manager);
         assertTrue(study.isClosed());
     }
 
@@ -406,7 +407,7 @@ class StudyControllerTest extends AbstractContainerBaseTest {
                 .andExpect(authenticated().withUsername(USER_NAME))
         ;
 
-        Study study = studyFactory.getStudy(StudyFactory.DEFAULT_PATH);
+        Study study = studyFactory.getStudy(StudyFactory.DEFAULT_PATH, manager);
         assertTrue(study.isRecruiting());
     }
 
@@ -445,7 +446,7 @@ class StudyControllerTest extends AbstractContainerBaseTest {
                 .andExpect(authenticated().withUsername(USER_NAME))
         ;
 
-        Study study = studyFactory.getStudy(StudyFactory.DEFAULT_PATH);
+        Study study = studyFactory.getStudy(StudyFactory.DEFAULT_PATH, manager);
         assertEquals(newTitle, study.getTitle());
     }
 
@@ -462,10 +463,10 @@ class StudyControllerTest extends AbstractContainerBaseTest {
                 .andExpect(redirectedUrl("/"))
                 .andExpect(authenticated().withUsername(USER_NAME))
         ;
-        assertThrows(IllegalArgumentException.class, () -> studyFactory.getStudy(StudyFactory.DEFAULT_PATH));
+        assertThrows(IllegalArgumentException.class, () -> studyFactory.getStudy(StudyFactory.DEFAULT_PATH, manager));
     }
 
-    @WithAccount({USER_NAME, "joinUser"})
+    @WithAccount("joinUser")
     @DisplayName("[POST] /study/{path}/join, 스터디 참가")
     @Test
     void testJoinStudy() throws Exception {
@@ -479,7 +480,7 @@ class StudyControllerTest extends AbstractContainerBaseTest {
                 .andExpect(authenticated().withUsername("joinUser"))
         ;
 
-        Study study = studyFactory.getStudy(StudyFactory.DEFAULT_PATH);
+        Study study = studyFactory.getStudy(StudyFactory.DEFAULT_PATH, manager);
         assertEquals(1, study.getManagers().size());
         assertEquals(1, study.getMembers().size());
     }
@@ -489,11 +490,9 @@ class StudyControllerTest extends AbstractContainerBaseTest {
     @Test
     void testLeaveStudy() throws Exception {
         Account manager = accountFactory.findAccountByNickname(USER_NAME);
-        studyFactory.defaultTestCreateStudy(manager);
-        Study study = studyFactory.getStudy(StudyFactory.DEFAULT_PATH);
+        Study study = studyFactory.defaultTestCreateStudy(manager);
         Account byNickname = accountFactory.findAccountByNickname("joinUser");
         study.join(byNickname);
-
         mockMvc.perform(post("/study/{path}/leave", StudyFactory.DEFAULT_PATH)
                         .with(csrf()))
                 .andExpect(status().is3xxRedirection())

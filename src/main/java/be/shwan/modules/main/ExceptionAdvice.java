@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @Slf4j
-@ControllerAdvice
+@ControllerAdvice()
 public class ExceptionAdvice {
     @ExceptionHandler
     public String handleRuntimeException(@CurrentUser Account account, HttpServletRequest request, RuntimeException e) {

@@ -20,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.env.Environment;
-import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,15 +49,18 @@ public class SimpleStudyServiceImpl implements StudyService {
 
     @Transactional(readOnly = true)
     @Override
-    public Study getStudy(String path) {
+    public Study getStudy(String path, Account account) {
         Study study = studyRepository.findByPath(path);
         existStudy(study);
+        if (!study.isMember(account) && !study.isManager(account)) {
+            throw new AccessDeniedException("해당 기능을 사용할 수 없습니다.");
+        }
         return study;
     }
 
     @Override
     public Study getStudyToUpdate(String path, Account account) {
-        Study study = getStudy(path);
+        Study study = getStudy(path, account);
         checkManager(account, study);
         return study;
     }
@@ -92,9 +94,12 @@ public class SimpleStudyServiceImpl implements StudyService {
 
     @Transactional(readOnly = true)
     @Override
-    public Study getStudyToEnroll(String path) {
+    public Study getStudyToEnroll(String path, Account account) {
         Study study = studyRepository.findStudyOnlyByPath(path);
         existStudy(study);
+        if (!study.isMember(account) && !study.isManager(account)) {
+            throw new AccessDeniedException("해당 기능을 사용할 수 없습니다.");
+        }
         return study;
     }
 
@@ -157,7 +162,7 @@ public class SimpleStudyServiceImpl implements StudyService {
 
     @Override
     public void removeStudy(Study study, Account account) {
-        if (!study.removeAble() || !study.isManager(account)){
+        if (!study.removeAble() || !study.isManager(account)) {
             throw new IllegalStateException("스터디를 삭제 할 수 없습니다.");
 
         }
@@ -166,10 +171,10 @@ public class SimpleStudyServiceImpl implements StudyService {
 
     @Transactional(readOnly = true)
     @Override
-    public Study getStudyWithMembersAndManagers(String path) {
+    public Study getStudyWithMembersAndManagers(String path, Account account) {
         Study study = studyRepository.findStudyWithMembersAndManagersByPath(path);
         existStudy(study);
-        return  study;
+        return study;
     }
 
     @Override
@@ -226,7 +231,7 @@ public class SimpleStudyServiceImpl implements StudyService {
     @Override
     public void addZone(Study study, RequestZoneDto zoneDto) {
         Zone zone = zoneService.findZone(zoneDto.zoneName());
-        if (zone == null ) {
+        if (zone == null) {
             throw new IllegalArgumentException("잘못된 활동 지역 입니다.");
         }
         study.addZone(zone);
@@ -235,7 +240,7 @@ public class SimpleStudyServiceImpl implements StudyService {
     @Override
     public void removeZone(Study study, RequestZoneDto zoneDto) {
         Zone zone = zoneService.findZone(zoneDto.zoneName());
-        if (zone == null ) {
+        if (zone == null) {
             throw new IllegalArgumentException("잘못된 활동 지역 입니다.");
         }
         study.removeZone(zone);
@@ -261,7 +266,7 @@ public class SimpleStudyServiceImpl implements StudyService {
 
     @Override
     public void generateTestdatas(Account account) {
-        for (int i = 0; i < 31; i ++) {
+        for (int i = 0; i < 31; i++) {
             StudyRequestDto requestDto = new StudyRequestDto("test" + i, "테스트 스터디" + i,
                     "테스트용 스터디입니다.", "테스트용 스터디 입니다.");
             Study study = newStudy(account, requestDto);

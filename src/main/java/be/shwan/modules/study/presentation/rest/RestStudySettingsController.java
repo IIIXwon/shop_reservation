@@ -14,7 +14,6 @@ import be.shwan.modules.tag.domain.TagRepository;
 import be.shwan.modules.tag.dto.RequestTagDto;
 import be.shwan.modules.zone.application.ZoneService;
 import be.shwan.modules.zone.dto.RequestZoneDto;
-import be.shwan.modules.zone.dto.ResponseZoneDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
@@ -22,16 +21,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Controller
@@ -244,7 +240,7 @@ public class RestStudySettingsController {
 
     @DeleteMapping
     public ResponseEntity removeStudy(@CurrentUser Account account, @PathVariable String path) {
-        Study study = studyService.getStudyWithMembersAndManagers(path);
+        Study study = studyService.getStudyWithMembersAndManagers(path, account);
         studyService.removeStudy(study, account);
         return ResponseEntity.ok().build();
     }

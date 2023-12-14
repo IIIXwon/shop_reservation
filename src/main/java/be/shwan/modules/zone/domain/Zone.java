@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@EqualsAndHashCode(of = "id")
+@EqualsAndHashCode(of = {"id", "city", "localNameOfCity"})
 @NoArgsConstructor
 public class Zone {
     @Id
